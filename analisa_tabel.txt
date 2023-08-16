@@ -1,0 +1,143 @@
+tbl_kecamatan
+id_kecamatan
+kode_kemendagri
+nama_kecamatan
+uid
+
+tbl_kelurahan
+id_kelurahan
+id_kecamatan
+nama_kelurahan
+kode_pos
+uid
+
+tbl_user
+id_user
+username
+password
+level 1|2|3 (admin, rs, puskesmas)
+tipe Rumah Sakit|Puskesmas
+nama_user
+nama_tempat RS Citra Nusa
+alamat
+id_kelurahan
+id_kecamatan
+kecamatan
+kelurahan
+notlp
+nohp
+email
+izin_ipal
+izin_tps
+status_user
+statusactive_user
+user_created
+user_updated
+uid
+
+tbl_transporter
+id_transporter
+npwp
+nama
+alamat
+id_kelurahan
+id_kecamatan
+kecamatan
+kelurahan
+notlp
+nohp
+email
+catatan
+status_transporter 0|1|2 (ditolak|pending|diacc)
+statusactive_user
+user_created
+user_updated
+uid
+
+tbl_transporter_mou
+id_transporter_mou
+id_transporter
+ket
+file1
+file2
+file3
+tgl_mulai
+tgl_akhir
+status_transporter_mou
+statusactive_transporter_mou
+user_created
+user_updated
+uid
+
+tbl_laporan_bulanan
+id_laporan_bulanan
+id_transporter
+nama_pemusnah
+metode_pemusnah
+berat_limbah_total
+punya_penyimpanan_tps
+ukuran_penyimpanan_tps
+punya_pemusnahan_sendiri
+ukuran_pemusnahan_sendiri
+limbah_b3_covid
+limbah_b3_noncovid
+debit_limbah_cair
+kapasitas_ipal
+catatan
+periode
+periode_nama
+tahun
+status_laporan_bulanan
+statusactive_laporan_bulanan
+user_created
+user_updated
+uid
+
+tbl_laporan_bulanan_file
+id_laporan_bulanan_file
+id_laporan_bulanan
+norut
+tipe manifest|logbook|ujilimbahcair
+file1
+file2
+file3
+status_laporan_bulanan_file
+statusactive_laporan_bulanan_file
+user_created
+user_updated
+uid
+
+tbl_laporan_bulanan_b3padat
+id_laporan_bulanan_b3padat
+id_laporan_bulanan
+norut
+kategori
+catatan
+total
+status_laporan_bulanan_b3padat
+statusactive_laporan_bulanan_b3padat
+user_created
+user_updated
+uid
+
+
+
+
+php artisan make:migration create_tbl_kelurahan
+php artisan make:migration create_tbl_kecamatan
+
+php artisan make:migration create_tbl_user
+php artisan make:migration create_tbl_transporter
+php artisan make:migration create_tbl_transporter_mou
+php artisan make:migration create_tbl_laporan_bulanan
+php artisan make:migration create_tbl_laporan_bulanan_file
+php artisan make:migration create_tbl_laporan_bulanan_b3padat
+
+php artisan make:model MKecamatan
+php artisan make:model MKelurahan
+php artisan make:model MUser
+php artisan make:model MTransporter
+php artisan make:model MTransporterMOU
+php artisan make:model MLaporanBulanan
+php artisan make:model MLaporanBulananFile
+php artisan make:model MLaporanBulananB3Padat
