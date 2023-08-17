@@ -132,6 +132,8 @@ php artisan make:migration create_tbl_transporter_mou
 php artisan make:migration create_tbl_laporan_bulanan
 php artisan make:migration create_tbl_laporan_bulanan_file
 php artisan make:migration create_tbl_laporan_bulanan_b3padat
+php artisan make:migration create_tbl_transporter_tmp
+php artisan make:migration create_tbl_transporter_tmp_mou
 
 php artisan make:model MKecamatan
 php artisan make:model MKelurahan
@@ -141,3 +143,5 @@ php artisan make:model MTransporterMOU
 php artisan make:model MLaporanBulanan
 php artisan make:model MLaporanBulananFile
 php artisan make:model MLaporanBulananB3Padat
+php artisan make:model MTransporterTmp
+php artisan make:model MTransporterTmpMOU

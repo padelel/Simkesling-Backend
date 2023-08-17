@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('tbl_laporan_bulanan_b3padat', function (Blueprint $table) {
             $table->id('id_laporan_bulanan_b3padat');
             $table->bigInteger('id_laporan_bulanan')->length(11)->nullable();
+            $table->bigInteger('id_user')->length(11)->nullable();
             $table->integer('norut')->length(3)->nullable();
             $table->string('kategori', 100)->nullable();
             $table->string('catatan', 255)->nullable();

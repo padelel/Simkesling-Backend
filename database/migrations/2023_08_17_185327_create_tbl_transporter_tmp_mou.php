@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tbl_transporter_mou', function (Blueprint $table) {
-            $table->id('id_transporter_mou');
-            $table->bigInteger('id_transporter')->length(11)->nullable();
+        Schema::create('tbl_transporter_tmp_mou', function (Blueprint $table) {
+            $table->id('id_transporter_tmp_mou');
+            $table->bigInteger('id_transporter_tmp')->length(11)->nullable();
             $table->bigInteger('id_user')->length(11)->nullable();
             $table->integer('norut')->length(3)->nullable();
             $table->string('keterangan', 255)->nullable();
@@ -23,8 +23,8 @@ return new class extends Migration
             $table->dateTime('tgl_mulai')->nullable();
             $table->dateTime('tgl_akhir')->nullable();
 
-            $table->integer('status_transporter_mou')->length(1)->nullable();
-            $table->integer('statusactive_transporter_mou')->length(1)->nullable();
+            $table->integer('status_transporter_tmp_mou')->length(1)->nullable();
+            $table->integer('statusactive_transporter_tmp_mou')->length(1)->nullable();
             $table->string('user_created', 100)->nullable();
             $table->string('user_updated', 100)->nullable();
             $table->uuid('uid');
@@ -37,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tbl_transporter_mou');
+        Schema::dropIfExists('tbl_transporter_tmp_mou');
     }
 };

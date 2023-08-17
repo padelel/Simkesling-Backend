@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tbl_transporter', function (Blueprint $table) {
-            $table->id('id_transporter');
+        Schema::create('tbl_transporter_tmp', function (Blueprint $table) {
+            $table->id('id_transporter_tmp');
             $table->bigInteger('id_user')->length(11)->nullable();
             $table->string('npwp_transporter', 50)->nullable();
             $table->string('nama_transporter', 100)->nullable();
@@ -26,8 +26,8 @@ return new class extends Migration
             $table->string('email', 100)->nullable();
             $table->string('catatan', 255)->nullable();
 
-            $table->integer('status_transporter')->length(1)->nullable();
-            $table->integer('statusactive_transporter')->length(1)->nullable();
+            $table->integer('status_transporter_tmp')->length(1)->nullable();
+            $table->integer('statusactive_transporter_tmp')->length(1)->nullable();
             $table->string('user_created', 100)->nullable();
             $table->string('user_updated', 100)->nullable();
             $table->uuid('uid');
@@ -40,6 +40,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tbl_transporter');
+        Schema::dropIfExists('tbl_transporter_tmp');
     }
 };

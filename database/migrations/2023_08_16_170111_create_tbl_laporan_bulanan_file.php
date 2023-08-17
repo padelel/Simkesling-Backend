@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('tbl_laporan_bulanan_file', function (Blueprint $table) {
             $table->id('id_laporan_bulanan_file');
             $table->bigInteger('id_laporan_bulanan')->length(11)->nullable();
+            $table->bigInteger('id_user')->length(11)->nullable();
             $table->integer('norut')->length(3)->nullable();
             $table->string('tipe_file', 15)->nullable(); # manifest|logbook|ujilimbahcair
             $table->string('file1', 255)->nullable();
