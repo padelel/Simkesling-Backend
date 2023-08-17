@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use MarcinOrlowski\ResponseBuilder\ResponseBuilder as RB;
 use App\MyResponseBuilder as MyRB;
 use DateTime;
+use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Hash;
@@ -62,6 +63,22 @@ class PusRsController extends Controller
         foreach ($form_file_mou as $key => $value) {
             $norut = $key + 1;
             $form_file = 'FILE_' . $transporterTmp->id_transporter_tmp  . '_' . $form_id_user  . '_' . $norut . '_.' . $value->extension();
+            $tmp_form_tgl_mulai = null;
+            $tmp_form_tgl_akhir = null;
+            try {
+                $tmp_form_tgl_mulai =
+                    DateTime::createFromFormat("Y-m-d", $form_tgl_mulai[$key]);;
+            } catch (Exception $ex) {
+                // dd($ex);
+                $tmp_form_tgl_mulai = null;
+            }
+            try {
+                $tmp_form_tgl_akhir =
+                    DateTime::createFromFormat("Y-m-d", $form_tgl_akhir[$key]);;
+            } catch (Exception $ex) {
+                // dd($ex);
+                $tmp_form_tgl_akhir = null;
+            }
 
             $transporterTmpMOU = new MTransporterTmpMOU();
             $transporterTmpMOU->norut = $norut;
@@ -70,8 +87,8 @@ class PusRsController extends Controller
             $transporterTmpMOU->file1 = '-- test --';
             $transporterTmpMOU->keterangan = '-';
             $transporterTmpMOU->file1 = $form_file;
-            $transporterTmpMOU->tgl_mulai = new DateTime();
-            $transporterTmpMOU->tgl_akhir = new DateTime();
+            $transporterTmpMOU->tgl_mulai = $tmp_form_tgl_mulai;
+            $transporterTmpMOU->tgl_akhir = $tmp_form_tgl_akhir;
             $transporterTmpMOU->status_transporter_tmp_mou = 1;
             $transporterTmpMOU->statusactive_transporter_tmp_mou = 1;
 
