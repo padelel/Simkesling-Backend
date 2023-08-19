@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('tbl_transporter_mou', function (Blueprint $table) {
             $table->id('id_transporter_mou');
+            $table->bigInteger('id_transporter_tmp')->length(11)->nullable();
+            $table->bigInteger('id_transporter_tmp_mou')->length(11)->nullable();
             $table->bigInteger('id_transporter')->length(11)->nullable();
             $table->bigInteger('id_user')->length(11)->nullable();
             $table->integer('norut')->length(3)->nullable();

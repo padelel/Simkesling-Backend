@@ -16,7 +16,7 @@ return new class extends Migration
             $table->bigInteger('id_laporan_bulanan')->length(11)->nullable();
             $table->bigInteger('id_user')->length(11)->nullable();
             $table->integer('norut')->length(3)->nullable();
-            $table->string('tipe_file', 15)->nullable(); # manifest|logbook|ujilimbahcair
+            $table->string('tipe_file', 15)->nullable(); # mou|manifest|logbook|ujilimbahcair
             $table->string('file1', 255)->nullable();
             $table->string('file2', 255)->nullable();
             $table->string('file3', 255)->nullable();
