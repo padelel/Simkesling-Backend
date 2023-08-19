@@ -21,9 +21,9 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
-Route::group(['prefix' => 'assets'], function () {
-    Route::post
-});
+// Route::group(['prefix' => 'assets'], function () {
+//     Route::post
+// });
 Route::group(['prefix' => 'v1'], function () {
     Route::post('/login', [LandingController::class, 'prosesLogin'])->name('api.v1.landing.proses-login');
 
