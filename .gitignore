@@ -18,4 +18,5 @@ yarn-error.log
 /.vscode
 
 /riset
-/public/FILING_USER/
+/public/FILING_USER/*/*
+/public/FILING_USER/*

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('tbl_transporter', function (Blueprint $table) {
             $table->id('id_transporter');
+            $table->bigInteger('id_transporter_tmp')->length(11)->nullable();
             $table->bigInteger('id_user')->length(11)->nullable();
             $table->string('npwp_transporter', 50)->nullable();
             $table->string('nama_transporter', 100)->nullable();

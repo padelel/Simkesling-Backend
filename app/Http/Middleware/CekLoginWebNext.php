@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
 // use Tymon\JWTAuth\JWTAuth;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\MyResponseBuilder as MyRB;
 
 class CekLoginWebNext
 {
@@ -21,28 +22,39 @@ class CekLoginWebNext
         // if (!Auth::guard('karyawan')->check()) return redirect()->route('karyawan.form-login')->withErrors('Silahkan Login Dahulu... #1');
         // if (Auth::guard('karyawan')->user()->status_user != 'aktif') return redirect()->route('karyawan.form-login')->withErrors('Silahkan Login Dahulu... #2');
         // dd($request->headers);
-        $resp = [
-            'success' => false,
-            'code' => 401,
-            'message' => 'Silahkan Login dahulu.! #1',
-            'data' => null
-        ];
+        // $resp = [
+        //     'success' => false,
+        //     'code' => 401,
+        //     'message' => 'Silahkan Login dahulu.! #1',
+        //     'data' => null
+        // ];
         $token = $request->headers->get('authorization');
         if ($token == null) {
             $token = $request->headers->get('Authorization');
         }
         if ($token == null) {
-            return response()->json($resp, 401);
+            // return response()->json($resp, 401);
+            return
+                MyRB::asError(401)
+                ->withMessage('Silahkan Login dahulu.! #1')
+                ->withData(null)
+                ->build();
         }
         $cek = JWTAuth::setToken($token)->check();
         if (!$cek) {
-            $resp['message'] = 'Silahkan Login dahulu.! #2';
-            return response()->json($resp, 401);
+            return
+                MyRB::asError(401)
+                ->withMessage('Silahkan Login dahulu.! #2')
+                ->withData(null)
+                ->build();
         }
         $user = JWTAuth::setToken($token)->getPayload();
         if (!$user) {
-            $resp['message'] = 'Silahkan Login dahulu.! #3';
-            return response()->json($resp, 401);
+            return
+                MyRB::asError(401)
+                ->withMessage('Silahkan Login dahulu.! #3')
+                ->withData(null)
+                ->build();
         }
         // $user = JWTAuth::setToken($token);
         // $user = JWTAuth::parseToken($token)->check();
