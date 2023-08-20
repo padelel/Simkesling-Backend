@@ -1,0 +1,1172 @@
+{
+	"info": {
+		"_postman_id": "d32f6ae9-4a9b-4bef-bca3-4006a6adb9c2",
+		"name": "Simkesling",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12639369"
+	},
+	"item": [
+		{
+			"name": "Kecamatan",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8000/api/v1/user/kecamatan/data",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"kecamatan",
+						"data"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Kelurahan",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "id_kecamatan",
+							"value": "7",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/user/kelurahan/data",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"kelurahan",
+						"data"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pengajuan Transporter: Get Data",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8000/api/v1/user/pengajuan-transporter/data",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"pengajuan-transporter",
+						"data"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pengajuan Transporter: Create",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "npwp_transporter",
+							"value": "01234567890",
+							"type": "text"
+						},
+						{
+							"key": "nama_transporter",
+							"value": "PT Pemusnah Abadi",
+							"type": "text"
+						},
+						{
+							"key": "alamat_transporter",
+							"value": "Jl. Nama Orang No 7",
+							"type": "text"
+						},
+						{
+							"key": "id_kelurahan",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "id_kecamatan",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "notlp",
+							"value": "081234567890",
+							"type": "text"
+						},
+						{
+							"key": "nohp",
+							"value": "081234567890",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "siapa@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "tgl_mulai[]",
+							"value": "2023-08-18",
+							"type": "text"
+						},
+						{
+							"key": "tgl_akhir[]",
+							"value": "2023-08-18",
+							"type": "text"
+						},
+						{
+							"key": "file_mou[]",
+							"type": "file",
+							"src": [
+								"/C:/Users/AIRGG/Documents/AssetGambar/Gbr (12).jpg",
+								"/C:/Users/AIRGG/Documents/AssetGambar/Gbr (13).jpg"
+							]
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/user/pengajuan-transporter/create",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"pengajuan-transporter",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pengajuan Transporter: Update",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "npwp_transporter",
+							"value": "01234567890",
+							"type": "text"
+						},
+						{
+							"key": "nama_transporter",
+							"value": "PT Pemusnah Masal",
+							"type": "text"
+						},
+						{
+							"key": "alamat_transporter",
+							"value": "Jl. Nama Orang No 8",
+							"type": "text"
+						},
+						{
+							"key": "id_kelurahan",
+							"value": "5",
+							"type": "text"
+						},
+						{
+							"key": "id_kecamatan",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "notlp",
+							"value": "081234567890",
+							"type": "text"
+						},
+						{
+							"key": "nohp",
+							"value": "081234567890",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "siapa@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "tgl_mulai[]",
+							"value": "2023-08-18",
+							"type": "text"
+						},
+						{
+							"key": "tgl_akhir[]",
+							"value": "2023-08-18",
+							"type": "text"
+						},
+						{
+							"key": "file_mou[]",
+							"type": "file",
+							"src": "/C:/Users/AIRGG/Documents/AssetGambar/Gbr (12).jpg"
+						},
+						{
+							"key": "oldid",
+							"value": "1",
+							"description": "id_transporter_tmp",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/user/pengajuan-transporter/update",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"pengajuan-transporter",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pengajuan Transporter: Delete",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "oldid",
+							"value": "3",
+							"description": "id_transporter_tmp",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/user/pengajuan-transporter/delete",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"pengajuan-transporter",
+						"delete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pengajuan Transporter: Validasi",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "oldid",
+							"value": "2",
+							"description": "id_transporter_tmp",
+							"type": "text"
+						},
+						{
+							"key": "status_transporter",
+							"value": "0",
+							"type": "text"
+						},
+						{
+							"key": "catatan",
+							"value": "ok",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/user/pengajuan-transporter/validasi",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"pengajuan-transporter",
+						"validasi"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Transporter: Get Data",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8000/api/v1/user/transporter/data",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"transporter",
+						"data"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Transporter: Update",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "npwp_transporter",
+							"value": "01234567890",
+							"type": "text"
+						},
+						{
+							"key": "nama_transporter",
+							"value": "PT Pemusnah Masal",
+							"type": "text"
+						},
+						{
+							"key": "alamat_transporter",
+							"value": "Jl. Nama Orang No 8",
+							"type": "text"
+						},
+						{
+							"key": "id_kelurahan",
+							"value": "5",
+							"type": "text"
+						},
+						{
+							"key": "id_kecamatan",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "notlp",
+							"value": "081234567890",
+							"type": "text"
+						},
+						{
+							"key": "nohp",
+							"value": "081234567890",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "siapa@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "tgl_mulai[]",
+							"value": "2023-08-18",
+							"type": "text"
+						},
+						{
+							"key": "tgl_akhir[]",
+							"value": "2023-08-18",
+							"type": "text"
+						},
+						{
+							"key": "file_mou[]",
+							"type": "file",
+							"src": "/C:/Users/AIRGG/Documents/AssetGambar/Gbr (4).jpg"
+						},
+						{
+							"key": "oldid",
+							"value": "2",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/user/transporter/update",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"transporter",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Transporter: Delete",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "oldid",
+							"value": "1",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/user/transporter/delete",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"transporter",
+						"delete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Laporan Bulanan: Get Data",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8000/api/v1/user/laporan-bulanan/data",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"laporan-bulanan",
+						"data"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Laporan Bulanan: Create",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "id_transporter",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "nama_pemusnah",
+							"value": "pt pembakar",
+							"type": "text"
+						},
+						{
+							"key": "metode_pemusnah",
+							"value": "dibakar",
+							"type": "text"
+						},
+						{
+							"key": "berat_limbah_total",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "punya_penyimpanan_tps",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "ukuran_penyimpanan_tps",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "punya_pemusnahan_sendiri",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "ukuran_pemusnahan_sendiri",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "limbah_b3_covid",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "limbah_b3_noncovid",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "debit_limbah_cair",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "kapasitas_ipal",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "memenuhi_syarat",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "catatan",
+							"value": "-",
+							"type": "text"
+						},
+						{
+							"key": "periode",
+							"value": "4",
+							"type": "text"
+						},
+						{
+							"key": "tahun",
+							"value": "2023",
+							"type": "text"
+						},
+						{
+							"key": "limbah_padat_kategori[]",
+							"value": "123",
+							"type": "text"
+						},
+						{
+							"key": "limbah_padat_catatan[]",
+							"value": "123",
+							"type": "text"
+						},
+						{
+							"key": "limbah_padat_berat[]",
+							"value": "123",
+							"type": "text"
+						},
+						{
+							"key": "file_logbook[]",
+							"type": "file",
+							"src": [
+								"/C:/Users/AIRGG/Documents/AssetGambar/Gbr (1).jpg",
+								"/C:/Users/AIRGG/Documents/AssetGambar/Gbr (2).jpg",
+								"/C:/Users/AIRGG/Documents/AssetGambar/Gbr (3).jpg"
+							]
+						},
+						{
+							"key": "file_manifest[]",
+							"type": "file",
+							"src": [
+								"/C:/Users/AIRGG/Documents/AssetGambar/Gbr (13).jpg",
+								"/C:/Users/AIRGG/Documents/AssetGambar/Gbr (14).jpg"
+							]
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/user/laporan-bulanan/create",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"laporan-bulanan",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Laporan Bulanan: Update",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "id_transporter",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "nama_pemusnah",
+							"value": "pt pemusnah coy",
+							"type": "text"
+						},
+						{
+							"key": "metode_pemusnah",
+							"value": "dibakar",
+							"type": "text"
+						},
+						{
+							"key": "berat_limbah_total",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "punya_penyimpanan_tps",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "ukuran_penyimpanan_tps",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "punya_pemusnahan_sendiri",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "ukuran_pemusnahan_sendiri",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "limbah_b3_covid",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "limbah_b3_noncovid",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "debit_limbah_cair",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "kapasitas_ipal",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "memenuhi_syarat",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "catatan",
+							"value": "-",
+							"type": "text"
+						},
+						{
+							"key": "periode",
+							"value": "4",
+							"type": "text"
+						},
+						{
+							"key": "tahun",
+							"value": "2023",
+							"type": "text"
+						},
+						{
+							"key": "limbah_padat_kategori[]",
+							"value": "123",
+							"type": "text"
+						},
+						{
+							"key": "limbah_padat_catatan[]",
+							"value": "123",
+							"type": "text"
+						},
+						{
+							"key": "limbah_padat_berat[]",
+							"value": "123",
+							"type": "text"
+						},
+						{
+							"key": "file_logbook[]",
+							"type": "file",
+							"src": [
+								"/C:/Users/AIRGG/Documents/AssetGambar/Gbr (13).jpg",
+								"/C:/Users/AIRGG/Documents/AssetGambar/Gbr (14).jpg"
+							]
+						},
+						{
+							"key": "file_manifest[]",
+							"type": "file",
+							"src": "/C:/Users/AIRGG/Documents/AssetGambar/Gbr (14).jpg"
+						},
+						{
+							"key": "oldid",
+							"value": "5",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/user/laporan-bulanan/update",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"laporan-bulanan",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PuskesmasRumahSakit: Create",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "puskesmasxx",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "123",
+							"type": "text"
+						},
+						{
+							"key": "nama_user",
+							"value": "puskesmas melati",
+							"type": "text"
+						},
+						{
+							"key": "level",
+							"value": "3",
+							"type": "text"
+						},
+						{
+							"key": "noreg_tempat",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "tipe_tempat",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "nama_tempat",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "alamat_tempat",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "id_kelurahan",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "id_kecamatan",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "notlp",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "nohp",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "email",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "file_izin_ipal",
+							"type": "file",
+							"src": "/C:/Users/AIRGG/Documents/AssetGambar/Gbr (1).jpg"
+						},
+						{
+							"key": "file_izin_tps",
+							"type": "file",
+							"src": "/C:/Users/AIRGG/Documents/AssetGambar/Gbr (4).jpg"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/user/puskesmas-rumahsakit/create",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"puskesmas-rumahsakit",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PuskesmasRumahSakit: Update",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "RSxxxx",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "123",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "nama_user",
+							"value": "Si Budi",
+							"type": "text"
+						},
+						{
+							"key": "level",
+							"value": "2",
+							"description": "2: RS | 3: Puskesmas",
+							"type": "text"
+						},
+						{
+							"key": "noreg_tempat",
+							"value": "123asdasd",
+							"type": "text"
+						},
+						{
+							"key": "nama_tempat",
+							"value": "RS Mawar",
+							"type": "text"
+						},
+						{
+							"key": "alamat_tempat",
+							"value": "Jlasdha sjd ashdsah das asd ",
+							"type": "text"
+						},
+						{
+							"key": "id_kecamatan",
+							"value": "2",
+							"type": "text"
+						},
+						{
+							"key": "id_kelurahan",
+							"value": "3",
+							"type": "text"
+						},
+						{
+							"key": "notlp",
+							"value": "1234567890",
+							"type": "text"
+						},
+						{
+							"key": "nohp",
+							"value": "123213123213",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "asdasdas@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "file_izin_ipal",
+							"type": "file",
+							"src": "/C:/Users/AIRGG/Documents/AssetGambar/Gbr (11).jpg"
+						},
+						{
+							"key": "file_izin_tps",
+							"type": "file",
+							"src": "/C:/Users/AIRGG/Documents/AssetGambar/Gbr (12).jpg"
+						},
+						{
+							"key": "oldid",
+							"value": "9",
+							"description": "id_user",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/user/puskesmas-rumahsakit/update",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"puskesmas-rumahsakit",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"adminsimkesling1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/login",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TestAPI",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8000/api/v1/",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						""
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

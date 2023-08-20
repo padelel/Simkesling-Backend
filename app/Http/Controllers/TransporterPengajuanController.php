@@ -33,14 +33,16 @@ class TransporterPengajuanController extends Controller
         $form_nama_user = $user->username ?? '';
         $form_uid = $user->uid ?? '';
 
-        $transporterTmp = MTransporterTmp::where('statusactive_transporter_tmp', '<>', 0)->where('id_user', $form_id_user)->get();
+        $transporterTmp = MTransporterTmp::where('statusactive_transporter_tmp', '<>', 0)->where('id_user', $form_id_user)
+            ->where('status_transporter_tmp', '<>', 2) // jika sudah di acc
+            ->get();
         foreach ($transporterTmp as $key => $v) {
             $transporterTmpMOU = MTransporterTmpMOU::where('id_transporter_tmp', $v->id_transporter_tmp)->get();
-            $v->files = $transporterTmpMOU->toArray();
+            $v->files = $transporterTmpMOU->values()->toArray();
         }
         return MyRB::asSuccess(200)
             ->withMessage('Success get data.!')
-            ->withData($transporterTmp)
+            ->withData($transporterTmp->values()->toArray())
             ->build();
     }
     function mouTmpProsesCreate(Request $request)
@@ -242,17 +244,20 @@ class TransporterPengajuanController extends Controller
         if ($transporterTmp == null) {
             return
                 MyRB::asError(404)
+                ->withHttpCode(404)
                 ->withMessage('Data Referensi Tidak Ditemukan.!')
                 ->withData(null)
                 ->build();
         }
         // -- buang file yang berkaitan dulu takutnya input kebanyakan filenya -- \\
         foreach ($transporterTmpMOU as $key => $value) {
-            try {
-                $filenya = public_path() . $value->file1;
-                unlink($filenya);
-            } catch (Exception $ex) {
-            }
+            $row = MTransporterTmpMOU::find($value->id_transporter_tmp_mou);
+            $row->delete();
+            // try {
+            //     $filenya = public_path() . $value->file1;
+            //     unlink($filenya);
+            // } catch (Exception $ex) {
+            // }
         }
 
         $transporterTmp->id_user = $form_id_user;
@@ -313,6 +318,7 @@ class TransporterPengajuanController extends Controller
 
         $resp =
             MyRB::asSuccess(200)
+            ->withHttpCode(200)
             ->withData(null)
             ->withMessage('Sukses Update Pengajuan Transporter.!')
             ->build();
@@ -321,12 +327,13 @@ class TransporterPengajuanController extends Controller
     function mouTmpProsesDelete(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'transporter_id' => 'required',
+            'oldid' => 'required',
         ]);
 
         if ($validator->fails()) {
             return
                 MyRB::asError(400)
+                ->withHttpCode(400)
                 ->withMessage('Uppss.. Form Tidak Sesuai.!')
                 ->withData($validator->errors()->toArray())
                 ->build();
@@ -338,15 +345,15 @@ class TransporterPengajuanController extends Controller
         $form_nama_user = $user->username ?? '';
         $form_uid = $user->uid ?? '';
 
-        // -- main Model -- \\
-        $form_transporter_id = $request->transporter_id;
-        $form_status_transporter = $request->status_transporter;
-        $form_catatan = $request->catatan ?? '';
+        // -- form payload -- \\
+        $form_oldid = $request->oldid;
 
-        $transporterTmp = MTransporterTmp::find($form_transporter_id);
+        // -- main Model -- \\
+        $transporterTmp = MTransporterTmp::find($form_oldid);
         if ($transporterTmp == null) {
             return
                 MyRB::asError(404)
+                ->withHttpCode(404)
                 ->withMessage('Data Referensi Tidak Ditemukan.!')
                 ->withData(null)
                 ->build();
@@ -356,6 +363,7 @@ class TransporterPengajuanController extends Controller
 
         return
             MyRB::asSuccess(200)
+            ->withHttpCode(200)
             ->withMessage('Sukses Melakukan Delete.!')
             ->withData(null)
             ->build();
@@ -363,13 +371,14 @@ class TransporterPengajuanController extends Controller
     function mouTmpProsesValidasi(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'transporter_id' => 'required',
+            'oldid' => 'required', // id_transporter_tmp
             'status_transporter' => 'required',
         ]);
 
         if ($validator->fails()) {
             return
                 MyRB::asError(400)
+                ->withHttpCode(400)
                 ->withMessage('Uppss.. Form Tidak Sesuai.!')
                 ->withData($validator->errors()->toArray())
                 ->build();
@@ -382,15 +391,16 @@ class TransporterPengajuanController extends Controller
         $form_uid = $user->uid ?? '';
 
         // -- main Model -- \\
-        $form_transporter_id = $request->transporter_id;
+        $form_oldid = $request->oldid;
         $form_status_transporter = $request->status_transporter;
         $form_catatan = $request->catatan ?? '';
 
-        $transporterTmp = MTransporterTmp::find($form_transporter_id);
-        $transporterTmpMOU = MTransporterTmpMOU::where('id_transporter_tmp', $form_transporter_id)->get();
+        $transporterTmp = MTransporterTmp::find($form_oldid);
+        $transporterTmpMOU = MTransporterTmpMOU::where('id_transporter_tmp', $form_oldid)->get();
         if ($transporterTmp == null) {
             return
                 MyRB::asError(404)
+                ->withHttpCode(404)
                 ->withMessage('Data Referensi Tidak Ditemukan.!')
                 ->withData(null)
                 ->build();

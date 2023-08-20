@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MKecamatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Response;
@@ -44,10 +45,8 @@ class LandingController extends Controller
     function prosesLogin(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'username'
-            => 'required',
-            'password'
-            => 'required',
+            'username' => 'required',
+            'password' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -61,7 +60,7 @@ class LandingController extends Controller
         $form_username = $request->username;
         $form_password = $request->password;
 
-        $token = auth()->guard('webnext')->attempt(['username' => $form_username, 'password' => $form_password]);
+        $token = auth()->guard('webnext')->attempt(['username' => $form_username, 'password' => $form_password, 'statusactive_user' => 1]);
         if (!$token) {
             return
                 MyRB::asError(401)
@@ -75,6 +74,40 @@ class LandingController extends Controller
             MyRB::asSuccess(200)
             ->withMessage('Sukses Login.!')
             ->withData(['user' => $user, 'token' => $token])
+            ->build();
+    }
+
+    function kecamatanProsesData(Request $request)
+    {
+        $kecamatan = MKecamatan::all();
+        $dataKecamatan = $kecamatan->values()->toArray();
+        return MyRB::asSuccess(200)
+            ->withMessage('Success get data.!')
+            ->withData($dataKecamatan)
+            ->build();
+    }
+    function kelurahanProsesData(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id_kecamatan' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return
+                MyRB::asError(400)
+                ->withMessage('Uppss.. Form Tidak Sesuai.!')
+                ->withData($validator->errors()->toArray())
+                ->build();
+        }
+
+        $form_id_kecamatan = $request->id_kecamatan;
+        if ($form_id_kecamatan == null) {
+        }
+        $kelurahan = MKecamatan::where('id_kecamatan', $form_id_kecamatan)->get();
+        $dataKelurahan = $kelurahan->values()->toArray();
+        return MyRB::asSuccess(200)
+            ->withMessage('Success get data.!')
+            ->withData($dataKelurahan)
             ->build();
     }
 }

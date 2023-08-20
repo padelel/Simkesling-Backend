@@ -28,6 +28,7 @@ return new class extends Migration
 
             $table->string('debit_limbah_cair', 20)->nullable();
             $table->string('kapasitas_ipal', 20)->nullable();
+            $table->integer('memenuhi_syarat')->length(1)->default(0)->nullable();
             $table->string('catatan', 255)->nullable();
             $table->integer('periode')->length(2)->nullable();
             $table->string('periode_nama', 15)->nullable();
