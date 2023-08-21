@@ -56,11 +56,10 @@
 					]
 				},
 				"url": {
-					"raw": "localhost:8000/api/v1/user/kelurahan/data",
+					"raw": "{{host}}/api/v1/user/kelurahan/data",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8000",
 					"path": [
 						"api",
 						"v1",
@@ -852,6 +851,34 @@
 			"response": []
 		},
 		{
+			"name": "PuskesmasRumahSakit: Get Data",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8000/api/v1/user/laporan-bulanan/data",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"laporan-bulanan",
+						"data"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "PuskesmasRumahSakit: Create",
 			"request": {
 				"method": "POST",
@@ -867,7 +894,7 @@
 					"formdata": [
 						{
 							"key": "username",
-							"value": "puskesmasxx",
+							"value": "puskesmasxx005",
 							"type": "text"
 						},
 						{
@@ -942,12 +969,12 @@
 						{
 							"key": "file_izin_ipal",
 							"type": "file",
-							"src": "/C:/Users/AIRGG/Documents/AssetGambar/Gbr (1).jpg"
+							"src": "/C:/Users/AIRGG/Documents/AssetGambar/Gbr (2).jpg"
 						},
 						{
 							"key": "file_izin_tps",
 							"type": "file",
-							"src": "/C:/Users/AIRGG/Documents/AssetGambar/Gbr (4).jpg"
+							"src": "/C:/Users/AIRGG/Documents/AssetGambar/Gbr (14).jpg"
 						}
 					]
 				},
@@ -984,7 +1011,7 @@
 					"formdata": [
 						{
 							"key": "username",
-							"value": "RSxxxx",
+							"value": "RS001",
 							"type": "text"
 						},
 						{
@@ -1052,11 +1079,11 @@
 						{
 							"key": "file_izin_tps",
 							"type": "file",
-							"src": "/C:/Users/AIRGG/Documents/AssetGambar/Gbr (12).jpg"
+							"src": "/C:/Users/AIRGG/Documents/AssetGambar/Gbr (6).jpg"
 						},
 						{
 							"key": "oldid",
-							"value": "9",
+							"value": "20",
 							"description": "id_user",
 							"type": "text"
 						}
@@ -1074,6 +1101,54 @@
 						"user",
 						"puskesmas-rumahsakit",
 						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PuskesmasRumahSakit: Delete",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "oldid",
+							"value": "9",
+							"type": "text"
+						},
+						{
+							"key": "file_izin_ipal",
+							"type": "file",
+							"src": "/C:/Users/AIRGG/Documents/AssetGambar/Gbr (11).jpg"
+						},
+						{
+							"key": "file_izin_tps",
+							"type": "file",
+							"src": "/C:/Users/AIRGG/Documents/AssetGambar/Gbr (12).jpg"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8000/api/v1/user/puskesmas-rumahsakit/delete",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"puskesmas-rumahsakit",
+						"delete"
 					]
 				}
 			},
@@ -1167,6 +1242,10 @@
 			"key": "token",
 			"value": "",
 			"type": "string"
+		},
+		{
+			"key": "host",
+			"value": "localhost:8000"
 		}
 	]
 }
