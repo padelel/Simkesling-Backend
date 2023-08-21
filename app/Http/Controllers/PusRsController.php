@@ -122,28 +122,6 @@ class PusRsController extends Controller
         $form_file_izin_ipal = $request->file_izin_ipal;
         $form_file_izin_tps = $request->file_izin_tps;
 
-        // -- FILING_USER -- \\
-        $dir_file = '/FILING_USER/File_' . $form_id_user . '_' . $form_uid . '/IZIN/';
-        $dir_file_move = public_path() . $dir_file;
-        File::makeDirectory($dir_file, $mode = 0777, true, true);
-
-        $uuid = Uuid::uuid4()->toString();
-        $form_file_izin_ipal_nama = null;
-        $form_file_izin_tps_nama = null;
-
-        if ($form_file_izin_ipal != null) {
-            $norut = 1;
-            $form_file = 'FILE_IZIN_IPAL_' . $form_id_user  . '_' . $norut . '_' . $uuid . '_.' . $form_file_izin_ipal->extension();
-            $form_file_izin_ipal->move($dir_file_move, $form_file);
-            $form_file_izin_ipal_nama = $form_file;
-        }
-        if ($form_file_izin_tps != null) {
-            $norut = 1;
-            $form_file = 'FILE_IZIN_TPS_' . $form_id_user  . '_' . $norut . '_' . $uuid . '_.' . $form_file_izin_tps->extension();
-            $form_file_izin_tps->move($dir_file_move, $form_file);
-            $form_file_izin_tps_nama = $form_file;
-        }
-
         // -- main Model -- \\
         $kecamatan = MKecamatan::find($form_id_kecamatan);
         $kelurahan = MKelurahan::find($form_id_kelurahan);
@@ -164,13 +142,43 @@ class PusRsController extends Controller
         $tableuser->notlp = $form_notlp; // string
         $tableuser->nohp = $form_nohp; // string
         $tableuser->email = $form_email; // string
-        $tableuser->izin_ipal = $form_file_izin_ipal_nama; // string
-        $tableuser->izin_tps = $form_file_izin_tps_nama; // string
+        // $tableuser->izin_ipal = $form_file_izin_ipal_nama; // string
+        // $tableuser->izin_tps = $form_file_izin_tps_nama; // string
         $tableuser->status_user = 1; // integer
         $tableuser->statusactive_user = 1; // integer
         $tableuser->user_created = $form_username; // string
         // $tableuser->user_updated = 0; // string
         $tableuser->save();
+
+        // -- FILING_USER -- \\
+        $dir_file = '/FILING_USER/File_' . $tableuser->id_user . '_' . $tableuser->uid . '/IZIN/';
+        $dir_file_move = public_path() . $dir_file;
+        File::makeDirectory($dir_file, $mode = 0777, true, true);
+
+        // $last_id =
+        $uuid = Uuid::uuid4()->toString();
+        $form_file_izin_ipal_nama = null;
+        $form_file_izin_tps_nama = null;
+
+        if ($form_file_izin_ipal != null) {
+            $norut = 1;
+            $form_file = 'FILE_IZIN_IPAL_' . $tableuser->id_user  . '_' . $norut . '_' . $tableuser->uid . '_.' . $form_file_izin_ipal->extension();
+            $form_file_izin_ipal->move($dir_file_move, $form_file);
+            $form_file_izin_ipal_nama = $form_file;
+        }
+        if ($form_file_izin_tps != null) {
+            $norut = 1;
+            $form_file = 'FILE_IZIN_TPS_' . $tableuser->id_user  . '_' . $norut . '_' . $tableuser->uid . '_.' . $form_file_izin_tps->extension();
+            $form_file_izin_tps->move($dir_file_move, $form_file);
+            $form_file_izin_tps_nama = $form_file;
+        }
+        // $tableuser = MUser::find($tableuser->id_user);
+        $tableuser->izin_ipal = $form_file_izin_ipal_nama;
+        $tableuser->izin_tps = $form_file_izin_tps_nama;
+        $tableuser->updated_at = null;
+        // $tableuser->updated_at = null;
+        $tableuser->save();
+        // $tableuser->save(['timestamps' => false]);
 
         $resp =
             MyRB::asSuccess(200)
@@ -240,15 +248,6 @@ class PusRsController extends Controller
         $form_file_izin_ipal = $request->file_izin_ipal;
         $form_file_izin_tps = $request->file_izin_tps;
 
-        // -- FILING_USER -- \\
-        $dir_file = '/FILING_USER/File_' . $form_id_user . '_' . $form_uid . '/IZIN/';
-        $dir_file_move = public_path() . $dir_file;
-        File::makeDirectory($dir_file, $mode = 0777, true, true);
-
-        $uuid = Uuid::uuid4()->toString();
-        $form_file_izin_ipal_nama = null;
-        $form_file_izin_tps_nama = null;
-
         // -- main Model -- \\
         $kecamatan = MKecamatan::find($form_id_kecamatan);
         $kelurahan = MKelurahan::find($form_id_kelurahan);
@@ -260,19 +259,6 @@ class PusRsController extends Controller
                 ->withMessage('Data Referensi Tidak Ditemukan.!')
                 ->withData(null)
                 ->build();
-        }
-
-        if ($form_file_izin_ipal != null) {
-            $norut = 1;
-            $form_file = 'FILE_IZIN_IPAL_' . $form_id_user  . '_' . $norut . '_' . $uuid . '_.' . $form_file_izin_ipal->extension();
-            $form_file_izin_ipal->move($dir_file_move, $form_file);
-            $form_file_izin_ipal_nama = $form_file;
-        }
-        if ($form_file_izin_tps != null) {
-            $norut = 1;
-            $form_file = 'FILE_IZIN_TPS_' . $form_id_user  . '_' . $norut . '_' . $uuid . '_.' . $form_file_izin_tps->extension();
-            $form_file_izin_tps->move($dir_file_move, $form_file);
-            $form_file_izin_tps_nama = $form_file;
         }
 
         $tableuser->username = $form_input_username; // string
@@ -292,12 +278,40 @@ class PusRsController extends Controller
         $tableuser->notlp = $form_notlp; // string
         $tableuser->nohp = $form_nohp; // string
         $tableuser->email = $form_email; // string
-        $tableuser->izin_ipal = $form_file_izin_ipal_nama; // string
-        $tableuser->izin_tps = $form_file_izin_tps_nama; // string
+        // $tableuser->izin_ipal = $form_file_izin_ipal_nama; // string
+        // $tableuser->izin_tps = $form_file_izin_tps_nama; // string
         // $tableuser->status_user = 1; // integer
         // $tableuser->statusactive_user = 1; // integer
         // $tableuser->user_created = $form_username; // string
         $tableuser->user_updated = $form_username; // string
+        $tableuser->save();
+
+        // -- FILING_USER -- \\
+        $dir_file = '/FILING_USER/File_' . $tableuser->id_user . '_' . $tableuser->uid . '/IZIN/';
+        $dir_file_move = public_path() . $dir_file;
+        File::makeDirectory($dir_file, $mode = 0777, true, true);
+
+        // $last_id =
+        $uuid = Uuid::uuid4()->toString();
+        $form_file_izin_ipal_nama = null;
+        $form_file_izin_tps_nama = null;
+
+        if ($form_file_izin_ipal != null) {
+            $norut = 1;
+            $form_file = 'FILE_IZIN_IPAL_' . $tableuser->id_user  . '_' . $norut . '_' . $tableuser->uid . '_.' . $form_file_izin_ipal->extension();
+            $form_file_izin_ipal->move($dir_file_move, $form_file);
+            $form_file_izin_ipal_nama = $form_file;
+        }
+        if ($form_file_izin_tps != null) {
+            $norut = 1;
+            $form_file = 'FILE_IZIN_TPS_' . $tableuser->id_user  . '_' . $norut . '_' . $tableuser->uid . '_.' . $form_file_izin_tps->extension();
+            $form_file_izin_tps->move($dir_file_move, $form_file);
+            $form_file_izin_tps_nama = $form_file;
+        }
+        // $tableuser = MUser::find($tableuser->id_user);
+        $tableuser->izin_ipal = $form_file_izin_ipal_nama;
+        $tableuser->izin_tps = $form_file_izin_tps_nama;
+        // $tableuser->updated_at = null;
         $tableuser->save();
 
         $resp =
