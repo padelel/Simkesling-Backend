@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MKecamatan;
+use App\Models\MKelurahan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Response;
@@ -103,7 +104,7 @@ class LandingController extends Controller
         $form_id_kecamatan = $request->id_kecamatan;
         if ($form_id_kecamatan == null) {
         }
-        $kelurahan = MKecamatan::where('id_kecamatan', $form_id_kecamatan)->get();
+        $kelurahan = MKelurahan::where('id_kecamatan', $form_id_kecamatan)->get();
         $dataKelurahan = $kelurahan->values()->toArray();
         return MyRB::asSuccess(200)
             ->withMessage('Success get data.!')
