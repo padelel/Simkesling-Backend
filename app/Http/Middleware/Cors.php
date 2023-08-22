@@ -15,11 +15,11 @@ class Cors
      */
     public function handle(Request $request, Closure $next): Response
     {
-        header('Access-Control-Allow-Origin:  *');
+        // header('Access-Control-Allow-Origin:  *');
         // header('Access-Control-Allow-Origin:  http://localhost:3000');
         // header('Access-Control-Allow-Origin:  http://192.168.1.24:3000');
         // header('Access-Control-Allow-Headers:  Content-Type, X-Auth-Token, Authorization, Origin');
-        // header('Access-Control-Allow-Methods:  POST, PUT');
+        header('Access-Control-Allow-Methods:  GET, POST, PUT, OPTIONS');
         return $next($request);
     }
 }
