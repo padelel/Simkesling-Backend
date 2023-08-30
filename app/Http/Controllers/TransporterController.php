@@ -27,11 +27,17 @@ class TransporterController extends Controller
         // -- user payload -- \\
         $user = MyUtils::getPayloadToken($request, true);
         $form_id_user = $user->id_user ?? 0;
+        $form_level = $user->level ?? '3';
         $form_username = $user->username ?? '';
         $form_nama_user = $user->username ?? '';
         $form_uid = $user->uid ?? '';
 
-        $transporter = MTransporter::where('statusactive_transporter', '<>', 0)->where('id_user', $form_id_user)->get();
+        $transporter = MTransporter::where('statusactive_transporter', '<>', 0);
+        if ($form_level == '1') {
+        } else {
+            $transporter = $transporter->where('id_user', $form_id_user);
+        }
+        $transporter = $transporter->get();
         foreach ($transporter as $key => $v) {
             $transporterMOU = MTransporterMOU::where('id_transporter', $v->id_transporter)->get();
             $v->files = $transporterMOU->values()->toArray();

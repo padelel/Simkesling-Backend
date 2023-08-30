@@ -7,6 +7,7 @@ use App\Models\MKelurahan;
 use App\Models\MTransporter;
 use Illuminate\Http\Request;
 
+use App\Models\MUser;
 use App\Models\MTransporterMOU;
 use App\Models\MTransporterTmp;
 use App\Models\MTransporterTmpMOU;
@@ -29,16 +30,22 @@ class TransporterPengajuanController extends Controller
         // -- user payload -- \\
         $user = MyUtils::getPayloadToken($request, true);
         $form_id_user = $user->id_user ?? 0;
+        $form_level = $user->level ?? '3';
         $form_username = $user->username ?? '';
         $form_nama_user = $user->username ?? '';
         $form_uid = $user->uid ?? '';
 
-        $transporterTmp = MTransporterTmp::where('statusactive_transporter_tmp', '<>', 0)->where('id_user', $form_id_user)
-            ->where('status_transporter_tmp', '<>', 2) // jika sudah di acc
-            ->get();
+        $transporterTmp = MTransporterTmp::where('statusactive_transporter_tmp', '<>', 0)->where('status_transporter_tmp', '<>', 2);
+        if ($form_level == '1') {
+        } else {
+            $transporterTmp = $transporterTmp->where('id_user', $form_id_user); // jika sudah di acc
+        }
+        $transporterTmp = $transporterTmp->get();
         foreach ($transporterTmp as $key => $v) {
+            $user = MUser::where(['id_user' => $v->id_user])->latest()->first();
             $transporterTmpMOU = MTransporterTmpMOU::where('id_transporter_tmp', $v->id_transporter_tmp)->get();
             $v->files = $transporterTmpMOU->values()->toArray();
+            $v->user = $user;
         }
         return MyRB::asSuccess(200)
             ->withMessage('Success get data.!')

@@ -59,6 +59,7 @@ Route::group(['prefix' => 'v1'], function () {
 
         // -- puskesmas rumahsakit
         Route::post('/puskesmas-rumahsakit/data', [PusRsController::class, 'pusRsProsesData'])->name('api.v1.user.puskesmas-rumahsakit.data');
+        Route::post('/puskesmas-rumahsakit/data-profile', [PusRsController::class, 'pusRsProsesDataProfile'])->name('api.v1.user.puskesmas-rumahsakit.data-profile');
         Route::post('/puskesmas-rumahsakit/create', [PusRsController::class, 'pusRsProsesCreate'])->name('api.v1.user.puskesmas-rumahsakit.create');
         Route::post('/puskesmas-rumahsakit/update', [PusRsController::class, 'pusRsProsesUpdate'])->name('api.v1.user.puskesmas-rumahsakit.update');
         Route::post('/puskesmas-rumahsakit/delete', [PusRsController::class, 'pusRsProsesDelete'])->name('api.v1.user.puskesmas-rumahsakit.delete');

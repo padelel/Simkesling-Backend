@@ -34,11 +34,18 @@ class LaporanBulananController extends Controller
         // -- user payload -- \\
         $user = MyUtils::getPayloadToken($request, true);
         $form_id_user = $user->id_user ?? 0;
+        $form_level = $user->level ?? '3';
         $form_username = $user->username ?? '';
         $form_nama_user = $user->username ?? '';
         $form_uid = $user->uid ?? '';
 
-        $laporanBulanan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where('id_user', $form_id_user)->get();
+        $laporanBulanan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0);
+        if ($form_level == '1') {
+        } else {
+            $laporanBulanan = $laporanBulanan->where('id_user', $form_id_user);
+        }
+
+        $laporanBulanan = $laporanBulanan->get();
         foreach ($laporanBulanan as $key => $v) {
             $laporanBulananB3Padat = MLaporanBulananB3Padat::where('id_laporan_bulanan', $v->id_laporan_bulanan)->get();
             $v->b3padat = $laporanBulananB3Padat->toArray();
@@ -109,9 +116,9 @@ class LaporanBulananController extends Controller
             'metode_pemusnah' => 'required',
             'berat_limbah_total' =>  'required',
             'punya_penyimpanan_tps' =>  'required',
-            'ukuran_penyimpanan_tps' =>  'required',
+            // 'ukuran_penyimpanan_tps' =>  'required',
             'punya_pemusnahan_sendiri' =>  'required',
-            'ukuran_pemusnahan_sendiri' =>  'required',
+            // 'ukuran_pemusnahan_sendiri' =>  'required',
             'limbah_b3_covid' =>  'required',
             'limbah_b3_noncovid' =>  'required',
             'debit_limbah_cair' =>  'required',
@@ -172,6 +179,17 @@ class LaporanBulananController extends Controller
         // file
         $form_file_manifest = $request->file_manifest;
         $form_file_logbook = $request->file_logbook;
+
+        $laporanBulanan = MLaporanBulanan::where(['id_user' => $form_id_user, 'periode' => $form_periode, 'tahun' => $form_tahun, 'statusactive_laporan_bulanan' => 1])->get();
+
+        if (count($laporanBulanan) > 0) {
+            return
+                MyRB::asError(400)
+                ->withHttpCode(400)
+                ->withMessage('Laporan untuk period `' . $form_periode_nama . ' ' . $form_tahun . '` sudah ada.!')
+                ->withData(null)
+                ->build();
+        }
 
         // -- FILING_USER -- \\
         $dir_file_manifest = '/FILING_USER/File_' . $form_id_user . '_' . $form_uid . '/MANIFEST/';

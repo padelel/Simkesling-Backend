@@ -31,9 +31,42 @@ use Ramsey\Uuid\Uuid;
 class PusRsController extends Controller
 {
     //
+    public function pusRsProsesDataProfile(Request $request)
+    {
+        // -- user payload -- \\
+        $user = MyUtils::getPayloadToken($request, true);
+        $form_id_user = $user->id_user ?? 0;
+        $form_level = $user->level ?? '3';
+        $form_username = $user->username ?? '';
+        $form_nama_user = $user->username ?? '';
+        $form_uid = $user->uid ?? 'xxx-xxxx-xxx';
+
+        $user = MUser::where('id_user', $form_id_user)->latest()->first();
+        // $dataUser = $user->values()->toArray();
+        // $resp['data'] = $user;
+        return MyRB::asSuccess(200)
+            ->withMessage('Success get data File.!')
+            ->withData(['data' => $user])
+            ->build();
+    }
     public function pusRsProsesData(Request $request)
     {
-        $user = MUser::where(['statusactive_user' => 1])->whereIn('level', [2, 3])->get();
+        // -- user payload -- \\
+        $user = MyUtils::getPayloadToken($request, true);
+        $form_id_user = $user->id_user ?? 0;
+        $form_level = $user->level ?? '3';
+        $form_username = $user->username ?? '';
+        $form_nama_user = $user->username ?? '';
+        $form_uid = $user->uid ?? 'xxx-xxxx-xxx';
+
+
+        $user = MUser::where(['statusactive_user' => 1])->where('level', '<>', '1');
+
+        if ($form_level == '1') {
+        } else {
+            $user = $user->whereIn('level', ['2', '3']);
+        }
+        $user = $user->get();
         $dataUser = $user->values()->toArray();
         return MyRB::asSuccess(200)
             ->withMessage('Success get data.!')
@@ -300,13 +333,13 @@ class PusRsController extends Controller
             $norut = 1;
             $form_file = 'FILE_IZIN_IPAL_' . $tableuser->id_user  . '_' . $norut . '_' . $tableuser->uid . '_.' . $form_file_izin_ipal->extension();
             $form_file_izin_ipal->move($dir_file_move, $form_file);
-            $form_file_izin_ipal_nama = $form_file;
+            $form_file_izin_ipal_nama = $dir_file . $form_file;
         }
         if ($form_file_izin_tps != null) {
             $norut = 1;
             $form_file = 'FILE_IZIN_TPS_' . $tableuser->id_user  . '_' . $norut . '_' . $tableuser->uid . '_.' . $form_file_izin_tps->extension();
             $form_file_izin_tps->move($dir_file_move, $form_file);
-            $form_file_izin_tps_nama = $form_file;
+            $form_file_izin_tps_nama = $dir_file . $form_file;
         }
         // $tableuser = MUser::find($tableuser->id_user);
         $tableuser->izin_ipal = $form_file_izin_ipal_nama;
