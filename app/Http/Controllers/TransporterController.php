@@ -9,6 +9,7 @@ use App\Models\MTransporterTmpMOU;
 use App\Models\MKecamatan;
 use App\Models\MKelurahan;
 use App\Models\MTransporter;
+use App\Models\MUser;
 use App\MyResponseBuilder as MyRB;
 use App\MyUtils as MyUtils;
 use DateTime;
@@ -39,8 +40,10 @@ class TransporterController extends Controller
         }
         $transporter = $transporter->get();
         foreach ($transporter as $key => $v) {
+            $user = MUser::where(['id_user' => $v->id_user])->latest()->first();
             $transporterMOU = MTransporterMOU::where('id_transporter', $v->id_transporter)->get();
             $v->files = $transporterMOU->values()->toArray();
+            $v->user = $user;
         }
         return MyRB::asSuccess(200)
             ->withMessage('Success get data.!')
@@ -115,6 +118,15 @@ class TransporterController extends Controller
 
         // -- form payload -- \\
         $form_oldid = $request->oldid;
+        $form_npwp_transporter = $request->npwp_transporter;
+        $form_nama_transporter = $request->nama_transporter;
+        $form_alamat_transporter = $request->alamat_transporter;
+        $form_id_kelurahan = $request->id_kelurahan;
+        $form_id_kecamatan = $request->id_kecamatan;
+        $form_notlp = $request->notlp;
+        $form_nohp = $request->nohp;
+        $form_email = $request->email;
+        // $form_catatan = $request->catatan;
 
         // upload file
         $form_file_mou = $request->file_mou;
@@ -126,6 +138,10 @@ class TransporterController extends Controller
         $dir_file = '/FILING_USER/File_' . $form_id_user . '_' . $form_uid . '/MOU/';
         $dir_file_move = public_path() . $dir_file;
         File::makeDirectory($dir_file, $mode = 0777, true, true);
+
+        // -- main Model -- \\
+        $kecamatan = MKecamatan::find($form_id_kecamatan);
+        $kelurahan = MKelurahan::find($form_id_kelurahan);
 
         // -- main Model -- \\
         $transporter = MTransporter::find($form_oldid);
@@ -150,20 +166,20 @@ class TransporterController extends Controller
         }
 
         $transporter->id_user = $form_id_user;
-        // $transporter->npwp_transporter = $form_npwp_transporter;
-        // $transporter->nama_transporter = $form_nama_transporter;
-        // $transporter->alamat_transporter = $form_alamat_transporter;
-        // $transporter->id_kelurahan = $form_id_kelurahan;
-        // $transporter->id_kecamatan = $form_id_kecamatan;
-        // $transporter->kelurahan = $kelurahan->nama_kelurahan ?? '';
-        // $transporter->kecamatan = $kecamatan->nama_kecamatan ?? '';
-        // $transporter->notlp = $form_notlp;
-        // $transporter->nohp = $form_nohp;
-        // $transporter->email = $form_email;
-        // // $transporter->catatan = $form_catatan;
+        $transporter->npwp_transporter = $form_npwp_transporter;
+        $transporter->nama_transporter = $form_nama_transporter;
+        $transporter->alamat_transporter = $form_alamat_transporter;
+        $transporter->id_kelurahan = $form_id_kelurahan;
+        $transporter->id_kecamatan = $form_id_kecamatan;
+        $transporter->kelurahan = $kelurahan->nama_kelurahan ?? '';
+        $transporter->kecamatan = $kecamatan->nama_kecamatan ?? '';
+        $transporter->notlp = $form_notlp;
+        $transporter->nohp = $form_nohp;
+        $transporter->email = $form_email;
+        // $transporter->catatan = $form_catatan;
         // $transporter->status_transporter_tmp = 1;
         // $transporter->statusactive_transporter_tmp = 1;
-        // $transporter->user_created = $form_username;
+        $transporter->user_created = $form_username;
         $transporter->user_updated = $form_username;
         $transporter->save();
 
