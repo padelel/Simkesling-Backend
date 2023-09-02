@@ -226,6 +226,7 @@ class LandingController extends Controller
         $laporan['total_chart_puskesmas_rs_sudah_lapor'] = $total_chart_puskesmas_rs_sudah_lapor;
         $laporan['notif_user_laporan_bulanan'] = $tmp_user;
 
+
         return MyRB::asSuccess(200)
             ->withMessage('Success get data.!')
             ->withData(['values' => $laporan])
