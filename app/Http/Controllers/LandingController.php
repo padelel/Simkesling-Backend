@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\MKecamatan;
 use App\Models\MKelurahan;
+use App\Models\MLaporanBulanan;
+use App\Models\MTransporter;
+use App\Models\MUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Response;
@@ -14,6 +17,7 @@ use Illuminate\Support\Facades\Session;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\MyResponseBuilder as MyRB;
 use App\MyUtils as MyUtils;
+use Carbon\Carbon;
 
 class LandingController extends Controller
 {
@@ -110,5 +114,116 @@ class LandingController extends Controller
             ->withMessage('Success get data.!')
             ->withData($dataKelurahan)
             ->build();
+    }
+
+    function dasboardUserProsesData(Request $request)
+    {
+        // -- user payload -- \\
+        $user = MyUtils::getPayloadToken($request, true);
+        $form_id_user = $user->id_user ?? 0;
+        $form_level = $user->level ?? '3';
+        $form_username = $user->username ?? '';
+        $form_nama_user = $user->username ?? '';
+        $form_uid = $user->uid ?? '';
+
+        // -- form input -- \\
+        $form_tahun = (($request->tahun == null) ? null : intval($request->tahun)) ?? intval(date('Y'));
+        $form_periode = (($request->periode == null) ? null : intval($request->periode)) ?? intval(date('m'));
+
+        $tahun = $form_tahun;
+        $periode = $form_periode;
+        $periode_nama = Carbon::create()->day(1)->month($periode)->format('F');
+        $laporan = [
+            'laporan_periode' => $periode,
+            'laporan_periode_nama' => $periode_nama,
+            'laporan_periode_tahun' => $tahun,
+            'sudah_lapor' => false,
+            'total_limbah_chart_year' => [],
+            'bulan_nama' => []
+        ];
+        $laporan_bulanan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where('id_user', $form_id_user);
+        $laporan_bulanan_periode_now = $laporan_bulanan->where(['periode' => $periode, 'tahun' => $tahun])->get();
+        if (count($laporan_bulanan_periode_now) > 0) {
+            $laporan['sudah_lapor'] = true;
+        }
+
+        $total_limbah_chart_year = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where('id_user', $form_id_user)->where('tahun', $tahun)->get();
+        for ($i = 1; $i <= 12; $i++) {
+            $bulan_nama = Carbon::create()->day(1)->month($i)->format('F');
+            $total_limbah = $total_limbah_chart_year->where('periode', $i)->first();
+            $total = 0;
+            if ($total_limbah) {
+                $total = intval($total_limbah->berat_limbah_total);
+            }
+            array_push($laporan['total_limbah_chart_year'], $total);
+            array_push($laporan['bulan_nama'], $bulan_nama);
+        }
+
+        return MyRB::asSuccess(200)
+            ->withMessage('Success get data.!')
+            ->withData(['values' => $laporan])
+            ->build();
+    }
+    function dasboardAdminProsesData(Request $request)
+    {
+        // -- user payload -- \\
+        $user = MyUtils::getPayloadToken($request, true);
+        $form_id_user = $user->id_user ?? 0;
+        $form_level = $user->level ?? '3';
+        $form_username = $user->username ?? '';
+        $form_nama_user = $user->username ?? '';
+        $form_uid = $user->uid ?? '';
+
+        // -- form input -- \\
+        $form_tahun = (($request->tahun == null) ? null : intval($request->tahun)) ?? intval(date('Y'));
+        $form_periode = (($request->periode == null) ? null : intval($request->periode)) ?? intval(date('m'));
+
+        $tahun = $form_tahun;
+        $periode = $form_periode;
+        $periode_nama = Carbon::create()->day(1)->month($periode)->format('F');
+
+        $laporan = [
+            'laporan_periode' => $periode,
+            'laporan_periode_nama' => $periode_nama,
+            'laporan_periode_tahun' => $tahun,
+        ];
+        $laporan_bulanan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0);
+        $laporan_periode_now = $laporan_bulanan->where('periode', $periode);
+        $total_laporan_perperiode = $laporan_periode_now->count();
+
+        $user_laporan = $laporan_periode_now->pluck('id_user');
+        $user_puskesmas_rs = MUser::where(['statusactive_user' => 1])->where('level', '<>', '1')->whereNotIn('id_user', $user_laporan)->get();
+        $total_puskesmas_rs_belum_lapor = $user_puskesmas_rs->count();
+        $total_puskesmas_rs_sudah_lapor = $laporan_periode_now->get()->count();
+
+        $total_transporter = MTransporter::whereYear('created_at', '=', $tahun)->get()->count();
+        $total_puskesmas_rs = MUser::whereYear('created_at', '=', $tahun)->where(['statusactive_user' => 1])->where('level', '<>', '1')->get()->count();
+
+        $tmp_user = MUser::where(['statusactive_user' => 1])->where('level', '<>', '1')->get();
+        foreach ($tmp_user as $data => $value) {
+            $cek_laporan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where('id_user', $value->id_user)->latest()->first();
+            $value->sudah_lapor = ($cek_laporan == null) ? false : true;
+        }
+        $laporan['total_laporan_perperiode'] = $total_laporan_perperiode;
+        $laporan['total_puskesmas_rs_belum_lapor'] = $total_puskesmas_rs_belum_lapor;
+        $laporan['total_puskesmas_rs_sudah_lapor'] = $total_puskesmas_rs_sudah_lapor;
+        $laporan['total_transporter'] = $total_transporter;
+        $laporan['total_puskesmas_rs'] = $total_puskesmas_rs;
+        $laporan['notif_user_laporan_bulanan'] = $tmp_user;
+
+        return MyRB::asSuccess(200)
+            ->withMessage('Success get data.!')
+            ->withData(['values' => $laporan])
+            ->build();
+
+
+        // dd($user_puskesmas_rs->count());
+        // dd($laporan_periode_now->get());
+        // dd($user_puskesmas_rs);
+        // $belum_lapor = $laporan_periode_now->whereNotIn('id_user', $user_puskesmas_rs)->get();
+        // $total = $laporan_bulanan->where('')
+        // dd($laporan_periode_now->get());
+        // dd($user_puskesmas_rs);
+        // dd($belum_lapor);
     }
 }

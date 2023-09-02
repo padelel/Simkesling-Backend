@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use App\Models\MTransporterMOU;
 use App\Models\MTransporterTmp;
 use App\Models\MTransporterTmpMOU;
+use App\Models\MUser;
 use MarcinOrlowski\ResponseBuilder\ResponseBuilder as RB;
 use App\MyResponseBuilder as MyRB;
 use App\MyUtils as MyUtils;
@@ -45,8 +46,10 @@ class LaporanBulananController extends Controller
             $laporanBulanan = $laporanBulanan->where('id_user', $form_id_user);
         }
 
-        $laporanBulanan = $laporanBulanan->get();
+        $laporanBulanan = $laporanBulanan->orderBy('id_laporan_bulanan', 'DESC')->get();
         foreach ($laporanBulanan as $key => $v) {
+            $user = MUser::where(['id_user' => $v->id_user])->latest()->first();
+            $v->user = $user;
             $laporanBulananB3Padat = MLaporanBulananB3Padat::where('id_laporan_bulanan', $v->id_laporan_bulanan)->get();
             $v->b3padat = $laporanBulananB3Padat->toArray();
 
@@ -319,9 +322,9 @@ class LaporanBulananController extends Controller
             'metode_pemusnah' => 'required',
             'berat_limbah_total' =>  'required',
             'punya_penyimpanan_tps' =>  'required',
-            'ukuran_penyimpanan_tps' =>  'required',
+            // 'ukuran_penyimpanan_tps' =>  'required',
             'punya_pemusnahan_sendiri' =>  'required',
-            'ukuran_pemusnahan_sendiri' =>  'required',
+            // 'ukuran_pemusnahan_sendiri' =>  'required',
             'limbah_b3_covid' =>  'required',
             'limbah_b3_noncovid' =>  'required',
             'debit_limbah_cair' =>  'required',
@@ -386,6 +389,17 @@ class LaporanBulananController extends Controller
         $form_file_manifest = $request->file_manifest;
         $form_file_logbook = $request->file_logbook;
 
+        // $laporanBulanan = MLaporanBulanan::where(['id_user' => $form_id_user, 'periode' => $form_periode, 'tahun' => $form_tahun, 'statusactive_laporan_bulanan' => 1])->get();
+
+        // if (count($laporanBulanan) > 0) {
+        //     return
+        //         MyRB::asError(400)
+        //         ->withHttpCode(400)
+        //         ->withMessage('Laporan untuk period `' . $form_periode_nama . ' ' . $form_tahun . '` sudah ada.!')
+        //         ->withData(null)
+        //         ->build();
+        // }
+
         // -- FILING_USER -- \\
         $dir_file_manifest = '/FILING_USER/File_' . $form_id_user . '_' . $form_uid . '/MANIFEST/';
         $dir_file_manifest_move = public_path() . $dir_file_manifest;
@@ -413,6 +427,17 @@ class LaporanBulananController extends Controller
                 ->withMessage('Data Laporan Bulanan Tidak Ditemukan.!')
                 ->withData(null)
                 ->build();
+        }
+        if ($laporan_bulanan->periode != $form_periode && $laporan_bulanan->tahun != $form_tahun) {
+            $cek_laporan_bulanan = MLaporanBulanan::where(['id_user' => $form_id_user, 'periode' => $form_periode, 'tahun' => $form_tahun, 'statusactive_laporan_bulanan' => 1])->get();
+            if (count($cek_laporan_bulanan) > 0) {
+                return
+                    MyRB::asError(400)
+                    ->withHttpCode(400)
+                    ->withMessage('Laporan untuk period `' . $form_periode_nama . ' ' . $form_tahun . '` sudah ada.!')
+                    ->withData(null)
+                    ->build();
+            }
         }
 
         $laporan_bulanan_b3padat = MLaporanBulananB3Padat::whereIn('id_laporan_bulanan', [$form_oldid, intval($form_oldid)])->get();
@@ -530,5 +555,50 @@ class LaporanBulananController extends Controller
             ->withMessage("Sukses Update Laporan Bulan '" . $form_periode_nama . " " . $form_tahun . "' .!")
             ->build();
         return $resp;
+    }
+
+    public function laporanProsesDelete(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'oldid' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return
+                MyRB::asError(400)
+                ->withHttpCode(400)
+                ->withMessage('Uppss.. Form Tidak Sesuai.!')
+                ->withData($validator->errors()->toArray())
+                ->build();
+        }
+        // -- user payload -- \\
+        $user = MyUtils::getPayloadToken($request, true);
+        $form_id_user = $user->id_user ?? 0;
+        $form_username = $user->username ?? '';
+        $form_nama_user = $user->username ?? '';
+        $form_uid = $user->uid ?? '';
+
+        // -- form payload -- \\
+        $form_oldid = $request->oldid;
+
+        // -- main Model -- \\
+        $tableuser = MLaporanBulanan::where(['id_laporan_bulanan' => $form_oldid, 'statusactive_laporan_bulanan' => 1])->latest()->first();
+        if ($tableuser == null) {
+            return
+                MyRB::asError(404)
+                ->withHttpCode(404)
+                ->withMessage('Data Referensi Tidak Ditemukan.!')
+                ->withData(null)
+                ->build();
+        }
+        $tableuser->statusactive_laporan_bulanan = 0;
+        $tableuser->save();
+
+        return
+            MyRB::asSuccess(200)
+            ->withHttpCode(200)
+            ->withMessage('Sukses Melakukan Delete.!')
+            ->withData(null)
+            ->build();
     }
 }
