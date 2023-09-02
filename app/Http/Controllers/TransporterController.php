@@ -12,6 +12,7 @@ use App\Models\MTransporter;
 use App\Models\MUser;
 use App\MyResponseBuilder as MyRB;
 use App\MyUtils as MyUtils;
+use Carbon\Carbon;
 use DateTime;
 use Exception;
 use Illuminate\Support\Facades\Validator;
@@ -42,6 +43,16 @@ class TransporterController extends Controller
         foreach ($transporter as $key => $v) {
             $user = MUser::where(['id_user' => $v->id_user])->latest()->first();
             $transporterMOU = MTransporterMOU::where('id_transporter', $v->id_transporter)->get();
+            $dateMOU = MTransporterMOU::where('id_transporter', $v->id_transporter)->orderBy('tgl_akhir', 'DESC')->latest()->first();
+            $tgl_now = Carbon::now();
+            $tgl_akhir = Carbon::now()->format('Y-m-d H:m:s');
+            $masa_berlaku_berakhir = true;
+            if ($dateMOU != null) {
+                $tgl_akhir = $dateMOU->tgl_akhir;
+            }
+            $masa_berlaku_berakhir = $tgl_now->gte(Carbon::parse($tgl_akhir));
+            $v->masa_berlaku_sudah_berakhir = $masa_berlaku_berakhir;
+            $v->masa_berlaku_terakhir = $tgl_akhir;
             $v->files = $transporterMOU->values()->toArray();
             $v->user = $user;
         }

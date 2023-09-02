@@ -34,7 +34,11 @@ Route::group(['prefix' => 'v1'], function () {
         Route::post('/', [LandingController::class, 'testApi'])->name('api.v1.testapi');
     });
 
-    Route::group(['prefix' => 'user'], function () {
+    Route::group(['prefix' => 'user', 'middleware' => 'ceklogin.webnext'], function () {
+        // -- kecamatan kelurahan
+        Route::post('/dashboard-user/data', [LandingController::class, 'dasboardUserProsesData'])->name('api.v1.user.dashboard.user.data');
+        Route::post('/dashboard-admin/data', [LandingController::class, 'dasboardAdminProsesData'])->name('api.v1.user.dashboard.admin.data');
+
         // -- kecamatan kelurahan
         Route::post('/kecamatan/data', [LandingController::class, 'kecamatanProsesData'])->name('api.v1.user.kecamatan.data');
         Route::post('/kelurahan/data', [LandingController::class, 'kelurahanProsesData'])->name('api.v1.user.kelurahan.data');
@@ -55,7 +59,7 @@ Route::group(['prefix' => 'v1'], function () {
         Route::post('/laporan-bulanan/data', [LaporanBulananController::class, 'laporanProsesData'])->name('api.v1.user.laporan-bulanan.data');
         Route::post('/laporan-bulanan/create', [LaporanBulananController::class, 'laporanProsesCreate'])->name('api.v1.user.laporan-bulanan.create');
         Route::post('/laporan-bulanan/update', [LaporanBulananController::class, 'laporanProsesUpdate'])->name('api.v1.user.laporan-bulanan.update');
-        // Route::post('/laporan-bulanan/delete', [LaporanBulananController::class, 'laporanProsesCreate'])->name('api.v1.user.laporan-bulanan.delete');
+        Route::post('/laporan-bulanan/delete', [LaporanBulananController::class, 'laporanProsesDelete'])->name('api.v1.user.laporan-bulanan.delete');
 
         // -- puskesmas rumahsakit
         Route::post('/puskesmas-rumahsakit/data', [PusRsController::class, 'pusRsProsesData'])->name('api.v1.user.puskesmas-rumahsakit.data');
