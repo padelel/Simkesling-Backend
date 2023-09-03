@@ -40,10 +40,25 @@ class LaporanBulananController extends Controller
         $form_nama_user = $user->username ?? '';
         $form_uid = $user->uid ?? '';
 
+        // -- form input -- \\
+        $form_tahun = (($request->tahun == null) ? null : intval($request->tahun)) ?? null;
+        $form_periode = (($request->periode == null) ? null : intval($request->periode)) ?? null;
+
+        $tahun = $form_tahun;
+        $periode = $form_periode;
+        $periode_nama = Carbon::create()->day(1)->month($periode)->format('F');
+
         $laporanBulanan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0);
         if ($form_level == '1') {
         } else {
             $laporanBulanan = $laporanBulanan->where('id_user', $form_id_user);
+        }
+        // $laporanBulanan = $laporanBulanan->where(['periode' => $periode, 'tahun' => $tahun]);
+        if ($periode) {
+            $laporanBulanan = $laporanBulanan->where('periode', $periode);
+        }
+        if ($tahun) {
+            $laporanBulanan = $laporanBulanan->where('tahun', $tahun);
         }
 
         $laporanBulanan = $laporanBulanan->orderBy('id_laporan_bulanan', 'DESC')->get();

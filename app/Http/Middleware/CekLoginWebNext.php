@@ -38,6 +38,7 @@ class CekLoginWebNext
                 MyRB::asError(401)
                 ->withMessage('Silahkan Login dahulu.! #1')
                 ->withData(null)
+                ->withHttpCode(401)
                 ->build();
         }
         $cek = JWTAuth::setToken($token)->check();
@@ -46,6 +47,7 @@ class CekLoginWebNext
                 MyRB::asError(401)
                 ->withMessage('Silahkan Login dahulu.! #2')
                 ->withData(null)
+                ->withHttpCode(401)
                 ->build();
         }
         $user = JWTAuth::setToken($token)->getPayload();
@@ -54,6 +56,7 @@ class CekLoginWebNext
                 MyRB::asError(401)
                 ->withMessage('Silahkan Login dahulu.! #3')
                 ->withData(null)
+                ->withHttpCode(401)
                 ->build();
         }
         // $user = JWTAuth::setToken($token);
