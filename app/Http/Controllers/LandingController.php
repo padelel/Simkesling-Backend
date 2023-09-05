@@ -130,8 +130,8 @@ class LandingController extends Controller
         $form_tahun = (($request->tahun == null) ? null : intval($request->tahun)) ?? intval(date('Y'));
         $form_periode = (($request->periode == null) ? null : intval($request->periode)) ?? intval(date('m'));
 
-        $tahun = $form_tahun;
-        $periode = $form_periode;
+        $tahun = ($form_tahun == 0 || $form_tahun == '0') ? intval(date('Y')) : $form_tahun;
+        $periode = ($form_periode == 0 || $form_periode == '0') ? intval(date('m')) : $form_periode;
         $periode_nama = Carbon::create()->day(1)->month($periode)->format('F');
         $laporan = [
             'laporan_periode' => $periode,
@@ -178,9 +178,11 @@ class LandingController extends Controller
         $form_tahun = (($request->tahun == null) ? null : intval($request->tahun)) ?? intval(date('Y'));
         $form_periode = (($request->periode == null) ? null : intval($request->periode)) ?? intval(date('m'));
 
-        $tahun = $form_tahun;
-        $periode = $form_periode;
+        $tahun = ($form_tahun == 0 || $form_tahun == '0') ? intval(date('Y')) : $form_tahun;
+        $periode = ($form_periode == 0 || $form_periode == '0') ? intval(date('m')) : $form_periode;
         $periode_nama = Carbon::create()->day(1)->month($periode)->format('F');
+        // dd($periode);
+        // dd($tahun);
 
         $laporan = [
             'laporan_periode' => $periode,
@@ -188,7 +190,7 @@ class LandingController extends Controller
             'laporan_periode_tahun' => $tahun,
         ];
         $laporan_bulanan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0);
-        $laporan_periode_now = $laporan_bulanan->where('periode', $periode);
+        $laporan_periode_now = $laporan_bulanan->where(['periode' => $periode, 'tahun' => $tahun]);
         $total_laporan_perperiode = $laporan_periode_now->count();
 
         $user_laporan = $laporan_periode_now->pluck('id_user');
@@ -196,12 +198,12 @@ class LandingController extends Controller
         $total_puskesmas_rs_belum_lapor = $user_puskesmas_rs->count();
         $total_puskesmas_rs_sudah_lapor = $laporan_periode_now->get()->count();
 
-        $total_transporter = MTransporter::whereYear('created_at', '=', $tahun)->get()->count();
-        $total_puskesmas_rs = MUser::whereYear('created_at', '=', $tahun)->where(['statusactive_user' => 1])->where('level', '<>', '1')->get()->count();
+        $total_transporter = MTransporter::get()->count();
+        $total_puskesmas_rs = MUser::where(['statusactive_user' => 1])->where('level', '<>', '1')->get()->count();
 
         $tmp_user = MUser::where(['statusactive_user' => 1])->where('level', '<>', '1')->get();
         foreach ($tmp_user as $data => $value) {
-            $cek_laporan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where('id_user', $value->id_user)->latest()->first();
+            $cek_laporan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where('id_user', $value->id_user)->where(['periode' => $periode, 'tahun' => $tahun])->latest()->first();
             $value->sudah_lapor = ($cek_laporan == null) ? false : true;
         }
 
@@ -209,10 +211,10 @@ class LandingController extends Controller
         $total_chart_puskesmas_rs_belum_lapor = [];
         $total_chart_puskesmas_rs_sudah_lapor = [];
         for ($i = 1; $i <= 12; $i++) {
-            $tmp_user_laporan_bulanan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where('periode', $i)->pluck('id_user');
+            $tmp_user_laporan_bulanan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where(['periode' => $i, 'tahun' => $tahun])->pluck('id_user');
             $user_puskesmas_rs_belum_lapor = MUser::where(['statusactive_user' => 1])->where('level', '<>', '1')->whereNotIn('id_user', $tmp_user_laporan_bulanan)->get()->count();
-            $user_puskesmas_rs_sudah_lapor = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where('periode', $i)->get()->count();
-            array_push($total_chart_puskesmas_rs, $total_puskesmas_rs);
+            $user_puskesmas_rs_sudah_lapor = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where(['periode' => $i, 'tahun' => $tahun])->get()->count();
+            array_push($total_chart_puskesmas_rs, $tmp_user->count());
             array_push($total_chart_puskesmas_rs_belum_lapor, $user_puskesmas_rs_belum_lapor);
             array_push($total_chart_puskesmas_rs_sudah_lapor, $user_puskesmas_rs_sudah_lapor);
         }
