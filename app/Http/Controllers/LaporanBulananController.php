@@ -77,6 +77,131 @@ class LaporanBulananController extends Controller
             ->withData($laporanBulanan->values()->toArray())
             ->build();
     }
+    function laporanRekapitulasiProsesData(Request $request)
+    {
+        // -- user payload -- \\
+        $user = MyUtils::getPayloadToken($request, true);
+        $form_id_user = $user->id_user ?? 0;
+        $form_level = $user->level ?? '3';
+        $form_username = $user->username ?? '';
+        $form_nama_user = $user->username ?? '';
+        $form_uid = $user->uid ?? '';
+
+        // -- form input -- \\
+        $form_tahun = (($request->tahun == null) ? date("Y") : intval($request->tahun)) ?? null;
+        $form_periode = (($request->periode == null) ? null : intval($request->periode)) ?? null;
+        $form_search_tempat = $request->search_tempat;
+
+        $tahun = $form_tahun;
+        $periode = $form_periode;
+        $periode_nama = Carbon::create()->day(1)->month($periode)->format('F');
+        // dd($periode);
+        // dd($tahun);
+
+        $users = MUser::where(['statusactive_user' => 1])->where('level', '<>', '1');
+        // dd($form_search_tempat);
+        if ($form_search_tempat != null && strlen($form_search_tempat) > 0) {
+            $users->where('nama_user', 'like', '%' . $form_search_tempat . '%');
+        }
+        $users = $users->get();
+        // dd($users);
+        $laporan_rekapitulasi['users'] = $users;
+        $laporan_rekapitulasi['total_seluruh_limbah'] = 0;
+        $laporan_rekapitulasi['total_seluruh_limbah_b3'] = 0;
+        $laporan_rekapitulasi['total_seluruh_limbah_covid'] = 0;
+        $laporan_rekapitulasi['total_seluruh_limbah_noncovid'] = 0;
+        $laporan_rekapitulasi['tahun'] = $tahun;
+        $laporan_rekapitulasi['laporan'] = [];
+        $i_awal = ($periode == null) ? 1 : $periode;
+        $i_akhir = ($periode == null) ? 12 : $periode;
+        for ($i = $i_awal; $i <= $i_akhir; $i++) {
+            $periode_nama = Carbon::create()->day(1)->month($i)->format('F');
+            $tmpData['periode'] = $i;
+            $tmpData['periode_nama'] = $periode_nama;
+            $tmpData['total_limbah'] = 0;
+            $tmpData['total_limbah_b3'] = 0;
+            $tmpData['total_limbah_covid'] = 0;
+            $tmpData['total_limbah_noncovid'] = 0;
+            $tmpData['users'] = [];
+            foreach ($users as $key => $user) {
+                $dataUser = MUser::find($user->id_user);
+                $laporanBulanan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where(['id_user' => $user->id_user, 'periode' => $i, 'tahun' => $tahun])->latest()->first();
+                $limbahB3Padat = 0;
+                $limbahNonCovid = 0;
+                $limbahCovid = 0;
+                if ($laporanBulanan) {
+                    try {
+                        $limbahB3Padat = intval($laporanBulanan->berat_limbah_total ?? '0') ?? 0;
+                    } catch (Exception $ex) {
+                    }
+                    try {
+                        $limbahNonCovid = intval($laporanBulanan->limbah_b3_noncovid) ?? 0;
+                    } catch (Exception $ex) {
+                    }
+                    try {
+                        $limbahCovid = intval($laporanBulanan->limbah_b3_covid) ?? 0;
+                    } catch (Exception $ex) {
+                    }
+                }
+                $dataUser->limbah = $laporanBulanan;
+                $dataUser->limbah_b3 = $limbahB3Padat;
+                $dataUser->limbah_noncovid = $limbahNonCovid;
+                $dataUser->limbah_covid = $limbahCovid;
+
+                $tmpData['total_limbah'] += $limbahB3Padat;
+                $tmpData['total_limbah'] += $limbahNonCovid;
+                $tmpData['total_limbah'] += $limbahCovid;
+                // dd($limbahB3Padat);
+                // dd($limbahNonCovid);
+                // dd($limbahCovid);
+                // dd($tmpData['total_limbah']);
+
+                $tmpData['total_limbah_b3'] += $limbahB3Padat;
+                $tmpData['total_limbah_noncovid'] += $limbahNonCovid;
+                $tmpData['total_limbah_covid'] += $limbahCovid;
+
+                array_push($tmpData['users'], $dataUser);
+            }
+            // total masing masing limbah pertahun
+            $laporan_rekapitulasi['total_seluruh_limbah_b3'] += $tmpData['total_limbah_b3'];
+            $laporan_rekapitulasi['total_seluruh_limbah_covid'] += $tmpData['total_limbah_covid'];
+            $laporan_rekapitulasi['total_seluruh_limbah_noncovid'] += $tmpData['total_limbah_noncovid'];
+
+            // total seluruh limbah pertahun
+            $laporan_rekapitulasi['total_seluruh_limbah'] += $tmpData['total_limbah'];
+            array_push($laporan_rekapitulasi['laporan'], $tmpData);
+        }
+        // dd($laporan_rekapitulasi);
+
+        // $laporanBulanan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0);
+        // if ($form_level == '1') {
+        // } else {
+        //     $laporanBulanan = $laporanBulanan->where('id_user', $form_id_user);
+        // }
+        // // $laporanBulanan = $laporanBulanan->where(['periode' => $periode, 'tahun' => $tahun]);
+        // if ($periode) {
+        //     $laporanBulanan = $laporanBulanan->where('periode', $periode);
+        // }
+        // if ($tahun) {
+        //     $laporanBulanan = $laporanBulanan->where('tahun', $tahun);
+        // }
+
+        // $laporanBulanan = $laporanBulanan->orderBy('id_laporan_bulanan', 'DESC')->get();
+        // foreach ($laporanBulanan as $key => $v) {
+        //     $user = MUser::where(['id_user' => $v->id_user])->latest()->first();
+        //     $v->user = $user;
+        //     $laporanBulananB3Padat = MLaporanBulananB3Padat::where('id_laporan_bulanan', $v->id_laporan_bulanan)->get();
+        //     $v->b3padat = $laporanBulananB3Padat->toArray();
+
+        //     $laporanBulananFile = MLaporanBulananFile::where('id_laporan_bulanan', $v->id_laporan_bulanan)->get();
+        //     $v->file_manifest = $laporanBulananFile->where('tipe_file', 'manifest')->values()->toArray();
+        //     $v->file_logbook = $laporanBulananFile->where('tipe_file', 'logbook')->values()->toArray();
+        // };
+        return MyRB::asSuccess(200)
+            ->withMessage('Success get data.!')
+            ->withData($laporan_rekapitulasi)
+            ->build();
+    }
     function laporanProsesCreate(Request $request)
     {
         // $table->id('id_laporan_bulanan');

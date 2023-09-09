@@ -46,11 +46,18 @@ class TransporterController extends Controller
             $dateMOU = MTransporterMOU::where('id_transporter', $v->id_transporter)->orderBy('tgl_akhir', 'DESC')->latest()->first();
             $tgl_now = Carbon::now();
             $tgl_akhir = Carbon::now()->format('Y-m-d H:m:s');
-            $masa_berlaku_berakhir = true;
+            $masa_berlaku_berakhir = 'belum';
             if ($dateMOU != null) {
                 $tgl_akhir = $dateMOU->tgl_akhir;
             }
-            $masa_berlaku_berakhir = $tgl_now->gte(Carbon::parse($tgl_akhir));
+            $masa_berlaku_berakhir_hariH = $tgl_now->gte(Carbon::parse($tgl_akhir));
+            $masa_berlaku_berakhir_1bulan = $tgl_now->gte(Carbon::parse($tgl_akhir)->subDay()->subMonth());
+            if ($masa_berlaku_berakhir_1bulan) {
+                $masa_berlaku_berakhir = '1bulan';
+            }
+            if ($masa_berlaku_berakhir_hariH) {
+                $masa_berlaku_berakhir = 'harih';
+            }
             $v->masa_berlaku_sudah_berakhir = $masa_berlaku_berakhir;
             $v->masa_berlaku_terakhir = $tgl_akhir;
             $v->files = $transporterMOU->values()->toArray();

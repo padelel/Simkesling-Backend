@@ -56,6 +56,7 @@ Route::group(['prefix' => 'v1'], function () {
         Route::post('/transporter/delete', [TransporterController::class, 'mouProsesDelete'])->name('api.v1.user.transporter.delete');
 
         // -- laporan bulanan
+        Route::post('/laporan-rekapitulasi/data', [LaporanBulananController::class, 'laporanRekapitulasiProsesData'])->name('api.v1.user.laporan-rekapitulasi.data');
         Route::post('/laporan-bulanan/data', [LaporanBulananController::class, 'laporanProsesData'])->name('api.v1.user.laporan-bulanan.data');
         Route::post('/laporan-bulanan/create', [LaporanBulananController::class, 'laporanProsesCreate'])->name('api.v1.user.laporan-bulanan.create');
         Route::post('/laporan-bulanan/update', [LaporanBulananController::class, 'laporanProsesUpdate'])->name('api.v1.user.laporan-bulanan.update');
