@@ -46,6 +46,23 @@ class MUser extends Authenticatable implements JWTSubject
             'email' => $this->email,
             'status_user' => $this->status_user,
             'statusactive_user' => $this->statusactive_user,
+            'link_manifest'  => $this->link_manifest,
+            'link_logbook'  => $this->link_logbook,
+            'link_lab_ipal'  => $this->link_lab_ipal,
+            'link_lab_lain'  => $this->link_lab_lain,
+            'link_dokumen_lingkungan_rs'  => $this->link_dokumen_lingkungan_rs,
+            'link_izin_transporter'  => $this->link_izin_transporter,
+            'link_mou_transporter'  => $this->link_mou_transporter,
+            'link_swa_pantau'  => $this->link_swa_pantau,
+            'link_lab_limbah_cair'  => $this->link_lab_limbah_cair,
+            'link_izin_ipal'  => $this->link_izin_ipal,
+            'link_izin_tps'  => $this->link_izin_tps,
+            'link_ukl'  => $this->link_ukl,
+            'link_upl'  => $this->link_upl,
+            'link1'  => $this->link1,
+            'link2'  => $this->link2,
+            'link3'  => $this->link3,
+            'kapasitas_ipal'  => $this->kapasitas_ipal,
             'uid' => $this->uid
         ];
     }

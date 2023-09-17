@@ -44,7 +44,13 @@ class TransporterPengajuanController extends Controller
         foreach ($transporterTmp as $key => $v) {
             $user = MUser::where(['id_user' => $v->id_user])->latest()->first();
             $transporterTmpMOU = MTransporterTmpMOU::where('id_transporter_tmp', $v->id_transporter_tmp)->get();
-            $v->files = $transporterTmpMOU->values()->toArray();
+            // $v->files = $transporterTmpMOU->values()->toArray();
+            $v->izin = $transporterTmpMOU->filter(function ($val) {
+                return $val->tipe == 'IZIN';
+            })->values()->toArray();
+            $v->files = $transporterTmpMOU->filter(function ($val) {
+                return $val->tipe == 'MOU';
+            })->values()->toArray();
             $v->user = $user;
         }
         return MyRB::asSuccess(200)
@@ -55,24 +61,35 @@ class TransporterPengajuanController extends Controller
     function mouTmpProsesCreate(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'npwp_transporter'
-            => 'required',
+            // 'npwp_transporter'
+            // => 'required',
             'nama_transporter'
             => 'required',
             'alamat_transporter'
             => 'required',
-            'id_kelurahan'
+            'nama_pemusnah'
             => 'required',
-            'id_kecamatan'
+            'metode_pemusnah'
             => 'required',
+            // 'id_kelurahan'
+            // => 'required',
+            // 'id_kecamatan'
+            // => 'required',
             'notlp'
             => 'required',
             'nohp'
             => 'required',
             'email'
             => 'required',
-            'file_mou'
-            => 'required|max:10120',
+            // 'link_input_izin_transporter'
+            // => 'required',
+            'link_input_izin'
+            => 'required',
+            'link_input_mou_transporter'
+            => 'required',
+
+            // 'file_mou'
+            // => 'required|max:10120',
         ]);
 
         if ($validator->fails()) {
@@ -106,6 +123,14 @@ class TransporterPengajuanController extends Controller
         $form_tgl_mulai = $request->tgl_mulai;
         $form_tgl_akhir = $request->tgl_akhir;
 
+        $form_noizin = $request->noizin;
+        $form_nama_pemusnah = $request->nama_pemusnah;
+        $form_metode_pemusnah = $request->metode_pemusnah;
+        $form_link_input_izin = $request->link_input_izin;
+        // link
+        // $form_link_input_izin_transporter = $request->link_input_izin_transporter;
+        $form_link_input_mou_transporter = $request->link_input_mou_transporter;
+
 
         // -- FILING_USER -- \\
         $dir_file = '/FILING_USER/File_' . $form_id_user . '_' . $form_uid . '/MOU/';
@@ -113,18 +138,18 @@ class TransporterPengajuanController extends Controller
         File::makeDirectory($dir_file, $mode = 0777, true, true);
 
         // -- main Model -- \\
-        $kecamatan = MKecamatan::find($form_id_kecamatan);
-        $kelurahan = MKelurahan::find($form_id_kelurahan);
+        // $kecamatan = MKecamatan::find($form_id_kecamatan);
+        // $kelurahan = MKelurahan::find($form_id_kelurahan);
 
         $transporterTmp = new MTransporterTmp();
         $transporterTmp->id_user = $form_id_user;
         $transporterTmp->npwp_transporter = $form_npwp_transporter;
         $transporterTmp->nama_transporter = $form_nama_transporter;
         $transporterTmp->alamat_transporter = $form_alamat_transporter;
-        $transporterTmp->id_kelurahan = $form_id_kelurahan;
-        $transporterTmp->id_kecamatan = $form_id_kecamatan;
-        $transporterTmp->kelurahan = $kelurahan->nama_kelurahan ?? '';
-        $transporterTmp->kecamatan = $kecamatan->nama_kecamatan ?? '';
+        // $transporterTmp->id_kelurahan = $form_id_kelurahan;
+        // $transporterTmp->id_kecamatan = $form_id_kecamatan;
+        // $transporterTmp->kelurahan = $kelurahan->nama_kelurahan ?? '';
+        // $transporterTmp->kecamatan = $kecamatan->nama_kecamatan ?? '';
         $transporterTmp->notlp = $form_notlp;
         $transporterTmp->nohp = $form_nohp;
         $transporterTmp->email = $form_email;
@@ -133,12 +158,49 @@ class TransporterPengajuanController extends Controller
         $transporterTmp->statusactive_transporter_tmp = 1;
         $transporterTmp->user_created = $form_username;
         // $transporterTmp->user_updated = 0;
+
+        $transporterTmp->noizin = $form_noizin;
+        $transporterTmp->link_input_izin = $form_link_input_izin;
+        $transporterTmp->nama_pemusnah = $form_nama_pemusnah;
+        $transporterTmp->metode_pemusnah = $form_metode_pemusnah;
         $transporterTmp->save();
 
-        foreach ($form_file_mou as $key => $value) {
+        // foreach ($form_link_input_izin_transporter as $key => $value) {
+        //     $norut = $key + 1;
+        //     $tmp_form_tgl_mulai = null;
+        //     $tmp_form_tgl_akhir = null;
+        //     try {
+        //         $tmp_form_tgl_mulai =
+        //             DateTime::createFromFormat("Y-m-d", $form_tgl_mulai[$key]);;
+        //     } catch (Exception $ex) {
+        //         // dd($ex);
+        //         $tmp_form_tgl_mulai = null;
+        //     }
+        //     try {
+        //         $tmp_form_tgl_akhir =
+        //             DateTime::createFromFormat("Y-m-d", $form_tgl_akhir[$key]);;
+        //     } catch (Exception $ex) {
+        //         // dd($ex);
+        //         $tmp_form_tgl_akhir = null;
+        //     }
+
+        //     $transporterTmpMOU = new MTransporterTmpMOU();
+        //     $transporterTmpMOU->norut = $norut;
+        //     $transporterTmpMOU->id_transporter_tmp = $transporterTmp->id_transporter_tmp;
+        //     $transporterTmpMOU->id_user = $form_id_user;
+        //     $transporterTmpMOU->keterangan = '-';
+        //     $transporterTmpMOU->tipe = 'IZIN';
+        //     $transporterTmpMOU->link_input = $value;
+        //     // $transporterTmpMOU->file1 = $form_dir_file;
+        //     $transporterTmpMOU->tgl_mulai = $tmp_form_tgl_mulai;
+        //     $transporterTmpMOU->tgl_akhir = $tmp_form_tgl_akhir;
+        //     $transporterTmpMOU->status_transporter_tmp_mou = 1;
+        //     $transporterTmpMOU->statusactive_transporter_tmp_mou = 1;
+        //     $transporterTmpMOU->user_created = $form_username;
+        //     $transporterTmpMOU->save();
+        // }
+        foreach ($form_link_input_mou_transporter as $key => $value) {
             $norut = $key + 1;
-            $form_file = 'FILE_' . $transporterTmp->id_transporter_tmp  . '_' . $form_id_user  . '_' . $norut . '_.' . $value->extension();
-            $form_dir_file = $dir_file . $form_file;
             $tmp_form_tgl_mulai = null;
             $tmp_form_tgl_akhir = null;
             try {
@@ -161,17 +223,53 @@ class TransporterPengajuanController extends Controller
             $transporterTmpMOU->id_transporter_tmp = $transporterTmp->id_transporter_tmp;
             $transporterTmpMOU->id_user = $form_id_user;
             $transporterTmpMOU->keterangan = '-';
-            $transporterTmpMOU->file1 = $form_dir_file;
+            $transporterTmpMOU->tipe = 'MOU';
+            $transporterTmpMOU->link_input = $value;
+            // $transporterTmpMOU->file1 = $form_dir_file;
             $transporterTmpMOU->tgl_mulai = $tmp_form_tgl_mulai;
             $transporterTmpMOU->tgl_akhir = $tmp_form_tgl_akhir;
             $transporterTmpMOU->status_transporter_tmp_mou = 1;
             $transporterTmpMOU->statusactive_transporter_tmp_mou = 1;
             $transporterTmpMOU->user_created = $form_username;
-            // $transporterTmpMOU->user_updated = 0;
-
-            $value->move($dir_file_move, $form_file);
             $transporterTmpMOU->save();
         }
+        // foreach ($form_file_mou as $key => $value) {
+        //     $norut = $key + 1;
+        //     $form_file = 'FILE_' . $transporterTmp->id_transporter_tmp  . '_' . $form_id_user  . '_' . $norut . '_.' . $value->extension();
+        //     $form_dir_file = $dir_file . $form_file;
+        //     $tmp_form_tgl_mulai = null;
+        //     $tmp_form_tgl_akhir = null;
+        //     try {
+        //         $tmp_form_tgl_mulai =
+        //             DateTime::createFromFormat("Y-m-d", $form_tgl_mulai[$key]);;
+        //     } catch (Exception $ex) {
+        //         // dd($ex);
+        //         $tmp_form_tgl_mulai = null;
+        //     }
+        //     try {
+        //         $tmp_form_tgl_akhir =
+        //             DateTime::createFromFormat("Y-m-d", $form_tgl_akhir[$key]);;
+        //     } catch (Exception $ex) {
+        //         // dd($ex);
+        //         $tmp_form_tgl_akhir = null;
+        //     }
+
+        //     $transporterTmpMOU = new MTransporterTmpMOU();
+        //     $transporterTmpMOU->norut = $norut;
+        //     $transporterTmpMOU->id_transporter_tmp = $transporterTmp->id_transporter_tmp;
+        //     $transporterTmpMOU->id_user = $form_id_user;
+        //     $transporterTmpMOU->keterangan = '-';
+        //     $transporterTmpMOU->file1 = $form_dir_file;
+        //     $transporterTmpMOU->tgl_mulai = $tmp_form_tgl_mulai;
+        //     $transporterTmpMOU->tgl_akhir = $tmp_form_tgl_akhir;
+        //     $transporterTmpMOU->status_transporter_tmp_mou = 1;
+        //     $transporterTmpMOU->statusactive_transporter_tmp_mou = 1;
+        //     $transporterTmpMOU->user_created = $form_username;
+        //     // $transporterTmpMOU->user_updated = 0;
+
+        //     $value->move($dir_file_move, $form_file);
+        //     $transporterTmpMOU->save();
+        // }
 
         $resp =
             MyRB::asSuccess(200)
@@ -184,24 +282,32 @@ class TransporterPengajuanController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'oldid' => 'required',
-            'npwp_transporter'
-            => 'required',
+            // 'npwp_transporter'
+            // => 'required',
             'nama_transporter'
             => 'required',
             'alamat_transporter'
             => 'required',
-            'id_kelurahan'
+            'nama_pemusnah'
             => 'required',
-            'id_kecamatan'
+            'metode_pemusnah'
             => 'required',
+            // 'id_kelurahan'
+            // => 'required',
+            // 'id_kecamatan'
+            // => 'required',
             'notlp'
             => 'required',
             'nohp'
             => 'required',
             'email'
             => 'required',
-            'file_mou'
-            => 'required|max:10120',
+            // 'link_input_izin_transporter'
+            // => 'required',
+            'link_input_izin'
+            => 'required',
+            'link_input_mou_transporter'
+            => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -236,6 +342,13 @@ class TransporterPengajuanController extends Controller
         $form_tgl_mulai = $request->tgl_mulai;
         $form_tgl_akhir = $request->tgl_akhir;
 
+        $form_noizin = $request->noizin;
+        $form_nama_pemusnah = $request->nama_pemusnah;
+        $form_metode_pemusnah = $request->metode_pemusnah;
+        $form_link_input_izin = $request->link_input_izin;
+        // link
+        // $form_link_input_izin_transporter = $request->link_input_izin_transporter;
+        $form_link_input_mou_transporter = $request->link_input_mou_transporter;
 
         // -- FILING_USER -- \\
         $dir_file = '/FILING_USER/File_' . $form_id_user . '_' . $form_uid . '/MOU/';
@@ -243,8 +356,8 @@ class TransporterPengajuanController extends Controller
         File::makeDirectory($dir_file, $mode = 0777, true, true);
 
         // -- main Model -- \\
-        $kecamatan = MKecamatan::find($form_id_kecamatan);
-        $kelurahan = MKelurahan::find($form_id_kelurahan);
+        // $kecamatan = MKecamatan::find($form_id_kecamatan);
+        // $kelurahan = MKelurahan::find($form_id_kelurahan);
 
         $transporterTmp = MTransporterTmp::find($form_oldid);
         $transporterTmpMOU = MTransporterTmpMOU::where('id_transporter_tmp', $form_oldid)->get();
@@ -271,10 +384,10 @@ class TransporterPengajuanController extends Controller
         $transporterTmp->npwp_transporter = $form_npwp_transporter;
         $transporterTmp->nama_transporter = $form_nama_transporter;
         $transporterTmp->alamat_transporter = $form_alamat_transporter;
-        $transporterTmp->id_kelurahan = $form_id_kelurahan;
-        $transporterTmp->id_kecamatan = $form_id_kecamatan;
-        $transporterTmp->kelurahan = $kelurahan->nama_kelurahan ?? '';
-        $transporterTmp->kecamatan = $kecamatan->nama_kecamatan ?? '';
+        // $transporterTmp->id_kelurahan = $form_id_kelurahan;
+        // $transporterTmp->id_kecamatan = $form_id_kecamatan;
+        // $transporterTmp->kelurahan = $kelurahan->nama_kelurahan ?? '';
+        // $transporterTmp->kecamatan = $kecamatan->nama_kecamatan ?? '';
         $transporterTmp->notlp = $form_notlp;
         $transporterTmp->nohp = $form_nohp;
         $transporterTmp->email = $form_email;
@@ -283,12 +396,48 @@ class TransporterPengajuanController extends Controller
         $transporterTmp->statusactive_transporter_tmp = 1;
         $transporterTmp->user_created = $form_username;
         // $transporterTmp->user_updated = 0;
+        $transporterTmp->noizin = $form_noizin;
+        $transporterTmp->nama_pemusnah = $form_nama_pemusnah;
+        $transporterTmp->metode_pemusnah = $form_metode_pemusnah;
+        $transporterTmp->link_input_izin = $form_link_input_izin;
         $transporterTmp->save();
 
-        foreach ($form_file_mou as $key => $value) {
+        // foreach ($form_link_input_izin_transporter as $key => $value) {
+        //     $norut = $key + 1;
+        //     $tmp_form_tgl_mulai = null;
+        //     $tmp_form_tgl_akhir = null;
+        //     try {
+        //         $tmp_form_tgl_mulai =
+        //             DateTime::createFromFormat("Y-m-d", $form_tgl_mulai[$key]);;
+        //     } catch (Exception $ex) {
+        //         // dd($ex);
+        //         $tmp_form_tgl_mulai = null;
+        //     }
+        //     try {
+        //         $tmp_form_tgl_akhir =
+        //             DateTime::createFromFormat("Y-m-d", $form_tgl_akhir[$key]);;
+        //     } catch (Exception $ex) {
+        //         // dd($ex);
+        //         $tmp_form_tgl_akhir = null;
+        //     }
+
+        //     $transporterTmpMOU = new MTransporterTmpMOU();
+        //     $transporterTmpMOU->norut = $norut;
+        //     $transporterTmpMOU->id_transporter_tmp = $transporterTmp->id_transporter_tmp;
+        //     $transporterTmpMOU->id_user = $form_id_user;
+        //     $transporterTmpMOU->keterangan = '-';
+        //     $transporterTmpMOU->tipe = 'IZIN';
+        //     $transporterTmpMOU->link_input = $value;
+        //     // $transporterTmpMOU->file1 = $form_dir_file;
+        //     $transporterTmpMOU->tgl_mulai = $tmp_form_tgl_mulai;
+        //     $transporterTmpMOU->tgl_akhir = $tmp_form_tgl_akhir;
+        //     $transporterTmpMOU->status_transporter_tmp_mou = 1;
+        //     $transporterTmpMOU->statusactive_transporter_tmp_mou = 1;
+        //     $transporterTmpMOU->user_created = $form_username;
+        //     $transporterTmpMOU->save();
+        // }
+        foreach ($form_link_input_mou_transporter as $key => $value) {
             $norut = $key + 1;
-            $form_file = 'FILE_' . $transporterTmp->id_transporter_tmp  . '_' . $form_id_user  . '_' . $norut . '_.' . $value->extension();
-            $form_dir_file = $dir_file . $form_file;
             $tmp_form_tgl_mulai = null;
             $tmp_form_tgl_akhir = null;
             try {
@@ -311,17 +460,54 @@ class TransporterPengajuanController extends Controller
             $transporterTmpMOU->id_transporter_tmp = $transporterTmp->id_transporter_tmp;
             $transporterTmpMOU->id_user = $form_id_user;
             $transporterTmpMOU->keterangan = '-';
-            $transporterTmpMOU->file1 = $form_dir_file;
+            $transporterTmpMOU->tipe = 'MOU';
+            $transporterTmpMOU->link_input = $value;
+            // $transporterTmpMOU->file1 = $form_dir_file;
             $transporterTmpMOU->tgl_mulai = $tmp_form_tgl_mulai;
             $transporterTmpMOU->tgl_akhir = $tmp_form_tgl_akhir;
             $transporterTmpMOU->status_transporter_tmp_mou = 1;
             $transporterTmpMOU->statusactive_transporter_tmp_mou = 1;
             $transporterTmpMOU->user_created = $form_username;
-            // $transporterTmpMOU->user_updated = 0;
-
-            $value->move($dir_file_move, $form_file);
             $transporterTmpMOU->save();
         }
+
+        // foreach ($form_file_mou as $key => $value) {
+        //     $norut = $key + 1;
+        //     $form_file = 'FILE_' . $transporterTmp->id_transporter_tmp  . '_' . $form_id_user  . '_' . $norut . '_.' . $value->extension();
+        //     $form_dir_file = $dir_file . $form_file;
+        //     $tmp_form_tgl_mulai = null;
+        //     $tmp_form_tgl_akhir = null;
+        //     try {
+        //         $tmp_form_tgl_mulai =
+        //             DateTime::createFromFormat("Y-m-d", $form_tgl_mulai[$key]);;
+        //     } catch (Exception $ex) {
+        //         // dd($ex);
+        //         $tmp_form_tgl_mulai = null;
+        //     }
+        //     try {
+        //         $tmp_form_tgl_akhir =
+        //             DateTime::createFromFormat("Y-m-d", $form_tgl_akhir[$key]);;
+        //     } catch (Exception $ex) {
+        //         // dd($ex);
+        //         $tmp_form_tgl_akhir = null;
+        //     }
+
+        //     $transporterTmpMOU = new MTransporterTmpMOU();
+        //     $transporterTmpMOU->norut = $norut;
+        //     $transporterTmpMOU->id_transporter_tmp = $transporterTmp->id_transporter_tmp;
+        //     $transporterTmpMOU->id_user = $form_id_user;
+        //     $transporterTmpMOU->keterangan = '-';
+        //     $transporterTmpMOU->file1 = $form_dir_file;
+        //     $transporterTmpMOU->tgl_mulai = $tmp_form_tgl_mulai;
+        //     $transporterTmpMOU->tgl_akhir = $tmp_form_tgl_akhir;
+        //     $transporterTmpMOU->status_transporter_tmp_mou = 1;
+        //     $transporterTmpMOU->statusactive_transporter_tmp_mou = 1;
+        //     $transporterTmpMOU->user_created = $form_username;
+        //     // $transporterTmpMOU->user_updated = 0;
+
+        //     $value->move($dir_file_move, $form_file);
+        //     $transporterTmpMOU->save();
+        // }
 
         $resp =
             MyRB::asSuccess(200)
@@ -436,9 +622,39 @@ class TransporterPengajuanController extends Controller
             $transporter->statusactive_transporter = $transporterTmp->statusactive_transporter_tmp;
             $transporter->user_created = $transporterTmp->user_created;
             // $transporter->user_updated = $transporterTmp->user_updated;
+            $transporter->noizin = $transporterTmp->noizin;
+            $transporter->link_input_izin = $transporterTmp->link_input_izin;
+            $transporter->nama_pemusnah = $transporterTmp->nama_pemusnah;
+            $transporter->metode_pemusnah = $transporterTmp->metode_pemusnah;
             $transporter->save();
 
-            foreach ($transporterTmpMOU as $key => $value) {
+            // $link_izin = $transporterTmpMOU->filter(function ($val) {
+            //     return $val->tipe == 'IZIN';
+            // });
+            $link_mou =  $transporterTmpMOU->filter(function ($val) {
+                return $val->tipe == 'MOU';
+            });
+
+            // foreach ($link_izin as $key => $value) {
+            //     $transporterMOU = new MTransporterMOU();
+            //     $transporterMOU->norut = $value->norut;
+            //     $transporterMOU->id_transporter = $transporter->id_transporter;
+            //     $transporterMOU->id_transporter_tmp = $value->id_transporter_tmp;
+            //     $transporterMOU->id_transporter_tmp_mou = $value->id_transporter_tmp_mou;
+            //     $transporterMOU->id_user = $value->id_user;
+            //     $transporterMOU->keterangan = $value->keterangan;
+            //     $transporterMOU->link_input = $value->link_input;
+            //     $transporterMOU->tipe = $value->tipe;
+            //     // $transporterMOU->file1 = $value->file1;
+            //     $transporterMOU->tgl_mulai = $value->tgl_mulai;
+            //     $transporterMOU->tgl_akhir = $value->tgl_akhir;
+            //     $transporterMOU->status_transporter_mou = 1;
+            //     $transporterMOU->statusactive_transporter_mou = 1;
+            //     $transporterMOU->user_created = $transporter->user_created;
+            //     // $transporterMOU->user_updated = 1;
+            //     $transporterMOU->save();
+            // }
+            foreach ($link_mou as $key => $value) {
                 $transporterMOU = new MTransporterMOU();
                 $transporterMOU->norut = $value->norut;
                 $transporterMOU->id_transporter = $transporter->id_transporter;
@@ -446,7 +662,9 @@ class TransporterPengajuanController extends Controller
                 $transporterMOU->id_transporter_tmp_mou = $value->id_transporter_tmp_mou;
                 $transporterMOU->id_user = $value->id_user;
                 $transporterMOU->keterangan = $value->keterangan;
-                $transporterMOU->file1 = $value->file1;
+                $transporterMOU->link_input = $value->link_input;
+                $transporterMOU->tipe = $value->tipe;
+                // $transporterMOU->file1 = $value->file1;
                 $transporterMOU->tgl_mulai = $value->tgl_mulai;
                 $transporterMOU->tgl_akhir = $value->tgl_akhir;
                 $transporterMOU->status_transporter_mou = 1;
@@ -455,6 +673,24 @@ class TransporterPengajuanController extends Controller
                 // $transporterMOU->user_updated = 1;
                 $transporterMOU->save();
             }
+
+            // foreach ($transporterTmpMOU as $key => $value) {
+            //     $transporterMOU = new MTransporterMOU();
+            //     $transporterMOU->norut = $value->norut;
+            //     $transporterMOU->id_transporter = $transporter->id_transporter;
+            //     $transporterMOU->id_transporter_tmp = $value->id_transporter_tmp;
+            //     $transporterMOU->id_transporter_tmp_mou = $value->id_transporter_tmp_mou;
+            //     $transporterMOU->id_user = $value->id_user;
+            //     $transporterMOU->keterangan = $value->keterangan;
+            //     $transporterMOU->file1 = $value->file1;
+            //     $transporterMOU->tgl_mulai = $value->tgl_mulai;
+            //     $transporterMOU->tgl_akhir = $value->tgl_akhir;
+            //     $transporterMOU->status_transporter_mou = 1;
+            //     $transporterMOU->statusactive_transporter_mou = 1;
+            //     $transporterMOU->user_created = $transporter->user_created;
+            //     // $transporterMOU->user_updated = 1;
+            //     $transporterMOU->save();
+            // }
         }
 
         return

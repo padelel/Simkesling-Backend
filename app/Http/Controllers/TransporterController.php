@@ -60,7 +60,10 @@ class TransporterController extends Controller
             }
             $v->masa_berlaku_sudah_berakhir = $masa_berlaku_berakhir;
             $v->masa_berlaku_terakhir = $tgl_akhir;
-            $v->files = $transporterMOU->values()->toArray();
+            $v->files = $transporterMOU->filter(function ($val) {
+                return $val->tipe == 'MOU';
+            })->values()->toArray();
+            // $v->files = $transporterMOU->values()->toArray();
             $v->user = $user;
         }
         return MyRB::asSuccess(200)
@@ -116,7 +119,8 @@ class TransporterController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'oldid' => 'required',
-            'file_mou' => 'required|max:10120',
+            // 'file_mou' => 'required|max:10120',
+            // 'link_input_mou_transporter' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -151,6 +155,14 @@ class TransporterController extends Controller
         $form_tgl_mulai = $request->tgl_mulai;
         $form_tgl_akhir = $request->tgl_akhir;
 
+        $form_noizin = $request->noizin;
+        $form_nama_pemusnah = $request->nama_pemusnah;
+        $form_metode_pemusnah = $request->metode_pemusnah;
+        $form_link_input_izin = $request->link_input_izin;
+
+
+        // $form_link_input_izin_transporter = $request->link_input_izin_transporter;
+        $form_link_input_mou_transporter = $request->link_input_mou_transporter;
 
         // -- FILING_USER -- \\
         $dir_file = '/FILING_USER/File_' . $form_id_user . '_' . $form_uid . '/MOU/';
@@ -158,8 +170,8 @@ class TransporterController extends Controller
         File::makeDirectory($dir_file, $mode = 0777, true, true);
 
         // -- main Model -- \\
-        $kecamatan = MKecamatan::find($form_id_kecamatan);
-        $kelurahan = MKelurahan::find($form_id_kelurahan);
+        // $kecamatan = MKecamatan::find($form_id_kecamatan);
+        // $kelurahan = MKelurahan::find($form_id_kelurahan);
 
         // -- main Model -- \\
         $transporter = MTransporter::find($form_oldid);
@@ -187,10 +199,10 @@ class TransporterController extends Controller
         $transporter->npwp_transporter = $form_npwp_transporter;
         $transporter->nama_transporter = $form_nama_transporter;
         $transporter->alamat_transporter = $form_alamat_transporter;
-        $transporter->id_kelurahan = $form_id_kelurahan;
-        $transporter->id_kecamatan = $form_id_kecamatan;
-        $transporter->kelurahan = $kelurahan->nama_kelurahan ?? '';
-        $transporter->kecamatan = $kecamatan->nama_kecamatan ?? '';
+        // $transporter->id_kelurahan = $form_id_kelurahan;
+        // $transporter->id_kecamatan = $form_id_kecamatan;
+        // $transporter->kelurahan = $kelurahan->nama_kelurahan ?? '';
+        // $transporter->kecamatan = $kecamatan->nama_kecamatan ?? '';
         $transporter->notlp = $form_notlp;
         $transporter->nohp = $form_nohp;
         $transporter->email = $form_email;
@@ -199,12 +211,15 @@ class TransporterController extends Controller
         // $transporter->statusactive_transporter_tmp = 1;
         $transporter->user_created = $form_username;
         $transporter->user_updated = $form_username;
+
+        $transporter->noizin = $form_noizin;
+        $transporter->nama_pemusnah = $form_nama_pemusnah;
+        $transporter->metode_pemusnah = $form_metode_pemusnah;
+        $transporter->link_input_izin = $form_link_input_izin;
         $transporter->save();
 
-        foreach ($form_file_mou as $key => $value) {
+        foreach ($form_link_input_mou_transporter as $key => $value) {
             $norut = $key + 1;
-            $form_file = 'FILE_' . $transporter->id_transporter  . '_' . $form_id_user  . '_' . $norut . '_.' . $value->extension();
-            $form_dir_file = $dir_file . $form_file;
             $tmp_form_tgl_mulai = null;
             $tmp_form_tgl_akhir = null;
             try {
@@ -228,7 +243,9 @@ class TransporterController extends Controller
             $transporterMOU->id_transporter_tmp = $transporter->id_transporter_tmp;
             $transporterMOU->id_user = $form_id_user;
             $transporterMOU->keterangan = '-';
-            $transporterMOU->file1 = $form_dir_file;
+            $transporterMOU->tipe = 'MOU';
+            $transporterMOU->link_input = $value;
+            // $transporterMOU->file1 = $form_dir_file;
             $transporterMOU->tgl_mulai = $tmp_form_tgl_mulai;
             $transporterMOU->tgl_akhir = $tmp_form_tgl_akhir;
             $transporterMOU->status_transporter_mou = 1;
@@ -236,9 +253,47 @@ class TransporterController extends Controller
             // $transporterMOU->user_created = $form_username;
             $transporterMOU->user_updated = $form_username;
 
-            $value->move($dir_file_move, $form_file);
+            // $value->move($dir_file_move, $form_file);
             $transporterMOU->save();
         }
+        // foreach ($form_file_mou as $key => $value) {
+        //     $norut = $key + 1;
+        //     $form_file = 'FILE_' . $transporter->id_transporter  . '_' . $form_id_user  . '_' . $norut . '_.' . $value->extension();
+        //     $form_dir_file = $dir_file . $form_file;
+        //     $tmp_form_tgl_mulai = null;
+        //     $tmp_form_tgl_akhir = null;
+        //     try {
+        //         $tmp_form_tgl_mulai =
+        //             DateTime::createFromFormat("Y-m-d", $form_tgl_mulai[$key]);;
+        //     } catch (Exception $ex) {
+        //         // dd($ex);
+        //         $tmp_form_tgl_mulai = null;
+        //     }
+        //     try {
+        //         $tmp_form_tgl_akhir =
+        //             DateTime::createFromFormat("Y-m-d", $form_tgl_akhir[$key]);;
+        //     } catch (Exception $ex) {
+        //         // dd($ex);
+        //         $tmp_form_tgl_akhir = null;
+        //     }
+
+        //     $transporterMOU = new MTransporterMOU();
+        //     $transporterMOU->norut = $norut;
+        //     $transporterMOU->id_transporter = $transporter->id_transporter;
+        //     $transporterMOU->id_transporter_tmp = $transporter->id_transporter_tmp;
+        //     $transporterMOU->id_user = $form_id_user;
+        //     $transporterMOU->keterangan = '-';
+        //     $transporterMOU->file1 = $form_dir_file;
+        //     $transporterMOU->tgl_mulai = $tmp_form_tgl_mulai;
+        //     $transporterMOU->tgl_akhir = $tmp_form_tgl_akhir;
+        //     $transporterMOU->status_transporter_mou = 1;
+        //     $transporterMOU->statusactive_transporter_mou = 1;
+        //     // $transporterMOU->user_created = $form_username;
+        //     $transporterMOU->user_updated = $form_username;
+
+        //     $value->move($dir_file_move, $form_file);
+        //     $transporterMOU->save();
+        // }
 
         $resp =
             MyRB::asSuccess(200)

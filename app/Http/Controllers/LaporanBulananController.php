@@ -131,15 +131,15 @@ class LaporanBulananController extends Controller
                 $limbahCovid = 0;
                 if ($laporanBulanan) {
                     try {
-                        $limbahB3Padat = intval($laporanBulanan->berat_limbah_total ?? '0') ?? 0;
+                        $limbahB3Padat = floatval($laporanBulanan->berat_limbah_total ?? '0') ?? 0;
                     } catch (Exception $ex) {
                     }
                     try {
-                        $limbahNonCovid = intval($laporanBulanan->limbah_b3_noncovid) ?? 0;
+                        $limbahNonCovid = floatval($laporanBulanan->limbah_b3_noncovid) ?? 0;
                     } catch (Exception $ex) {
                     }
                     try {
-                        $limbahCovid = intval($laporanBulanan->limbah_b3_covid) ?? 0;
+                        $limbahCovid = floatval($laporanBulanan->limbah_b3_covid) ?? 0;
                     } catch (Exception $ex) {
                     }
                 }
@@ -255,18 +255,18 @@ class LaporanBulananController extends Controller
 
         $validator = Validator::make($request->all(), [
             'id_transporter' => 'required',
-            'nama_pemusnah' => 'required',
-            'metode_pemusnah' => 'required',
+            // 'nama_pemusnah' => 'required',
+            // 'metode_pemusnah' => 'required',
             'berat_limbah_total' =>  'required',
-            'punya_penyimpanan_tps' =>  'required',
+            // 'punya_penyimpanan_tps' =>  'required',
             // 'ukuran_penyimpanan_tps' =>  'required',
-            'punya_pemusnahan_sendiri' =>  'required',
+            // 'punya_pemusnahan_sendiri' =>  'required',
             // 'ukuran_pemusnahan_sendiri' =>  'required',
             'limbah_b3_covid' =>  'required',
             'limbah_b3_noncovid' =>  'required',
             'debit_limbah_cair' =>  'required',
-            'kapasitas_ipal' =>  'required',
-            'memenuhi_syarat' =>  'required',
+            // 'kapasitas_ipal' =>  'required',
+            // 'memenuhi_syarat' =>  'required',
             'catatan' => 'required',
             'periode' => 'required',
             'tahun' => 'required',
@@ -275,8 +275,15 @@ class LaporanBulananController extends Controller
             'limbah_padat_catatan' => 'required',
             'limbah_padat_berat' => 'required',
 
-            'file_manifest' => 'required|max:10120',
-            'file_logbook' => 'required|max:10120',
+            // 'file_manifest' => 'required|max:10120',
+            // 'file_logbook' => 'required|max:10120',
+            'link_input_manifest' => 'required',
+            'link_input_logbook' => 'required',
+            'link_input_lab_ipal' => 'required',
+            'link_input_lab_lain' => 'required',
+            'link_input_dokumen_lingkungan_rs' => 'required',
+            'link_input_swa_pantau' => 'required',
+            'link_input_ujilab_cair' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -322,6 +329,14 @@ class LaporanBulananController extends Controller
         // file
         $form_file_manifest = $request->file_manifest;
         $form_file_logbook = $request->file_logbook;
+
+        $form_link_input_manifest = $request->link_input_manifest;
+        $form_link_input_logbook = $request->link_input_logbook;
+        $form_link_input_lab_ipal = $request->link_input_lab_ipal;
+        $form_link_input_lab_lain = $request->link_input_lab_lain;
+        $form_link_input_dokumen_lingkungan_rs = $request->link_input_dokumen_lingkungan_rs;
+        $form_link_input_swa_pantau = $request->link_input_swa_pantau;
+        $form_link_input_ujilab_cair = $request->link_input_ujilab_cair;
 
         $laporanBulanan = MLaporanBulanan::where(['id_user' => $form_id_user, 'periode' => $form_periode, 'tahun' => $form_tahun, 'statusactive_laporan_bulanan' => 1])->get();
 
@@ -378,6 +393,13 @@ class LaporanBulananController extends Controller
         $laporan_bulanan->statusactive_laporan_bulanan = 1; // integer
         $laporan_bulanan->user_created = $form_username; // string
         // $laporan_bulanan->user_updated = 0; // string
+        $laporan_bulanan->link_input_manifest = $form_link_input_manifest;
+        $laporan_bulanan->link_input_logbook = $form_link_input_logbook;
+        $laporan_bulanan->link_input_lab_ipal = $form_link_input_lab_ipal;
+        $laporan_bulanan->link_input_lab_lain = $form_link_input_lab_lain;
+        $laporan_bulanan->link_input_dokumen_lingkungan_rs = $form_link_input_dokumen_lingkungan_rs;
+        $laporan_bulanan->link_input_swa_pantau = $form_link_input_swa_pantau;
+        $laporan_bulanan->link_input_ujilab_cair = $form_link_input_ujilab_cair;
         $laporan_bulanan->save();
 
         foreach ($form_limbah_padat_kategori as $key => $v) {
@@ -400,50 +422,50 @@ class LaporanBulananController extends Controller
         }
 
         // -- MANIFEST
-        foreach ($form_file_manifest as $key => $v) {
-            $norut = $key + 1;
-            $form_file = 'FILE_MANIFEST_' . $laporan_bulanan->id_laporan_bulanan  . '_' . $form_id_user  . '_' . $norut . '_.' . $v->extension();
-            $form_dir_file = $dir_file_manifest . $form_file;
+        // foreach ($form_file_manifest as $key => $v) {
+        //     $norut = $key + 1;
+        //     $form_file = 'FILE_MANIFEST_' . $laporan_bulanan->id_laporan_bulanan  . '_' . $form_id_user  . '_' . $norut . '_.' . $v->extension();
+        //     $form_dir_file = $dir_file_manifest . $form_file;
 
-            $laporan_bulanan_file = new MLaporanBulananFile();
-            $laporan_bulanan_file->id_laporan_bulanan = $laporan_bulanan->id_laporan_bulanan;
-            $laporan_bulanan_file->id_user = $form_id_user;
-            $laporan_bulanan_file->norut = $norut;
-            $laporan_bulanan_file->tipe_file = 'manifest';
-            $laporan_bulanan_file->file1 = $form_dir_file;
-            // $laporan_bulanan_file->file2 = 0;
-            // $laporan_bulanan_file->file3 = 0;
-            $laporan_bulanan_file->status_laporan_bulanan_file = 1;
-            $laporan_bulanan_file->statusactive_laporan_bulanan_file = 1;
-            $laporan_bulanan_file->user_created = $form_username;
-            // $laporan_bulanan_file->user_updated = 0;
+        //     $laporan_bulanan_file = new MLaporanBulananFile();
+        //     $laporan_bulanan_file->id_laporan_bulanan = $laporan_bulanan->id_laporan_bulanan;
+        //     $laporan_bulanan_file->id_user = $form_id_user;
+        //     $laporan_bulanan_file->norut = $norut;
+        //     $laporan_bulanan_file->tipe_file = 'manifest';
+        //     $laporan_bulanan_file->file1 = $form_dir_file;
+        //     // $laporan_bulanan_file->file2 = 0;
+        //     // $laporan_bulanan_file->file3 = 0;
+        //     $laporan_bulanan_file->status_laporan_bulanan_file = 1;
+        //     $laporan_bulanan_file->statusactive_laporan_bulanan_file = 1;
+        //     $laporan_bulanan_file->user_created = $form_username;
+        //     // $laporan_bulanan_file->user_updated = 0;
 
-            $v->move($dir_file_manifest_move, $form_file);
-            $laporan_bulanan_file->save();
-        }
+        //     $v->move($dir_file_manifest_move, $form_file);
+        //     $laporan_bulanan_file->save();
+        // }
 
-        //-- LOGBOOK
-        foreach ($form_file_logbook as $key => $v) {
-            $norut = $key + 1;
-            $form_file = 'FILE_LOGBOOK_' . $laporan_bulanan->id_laporan_bulanan  . '_' . $form_id_user  . '_' . $norut . '_.' . $v->extension();
-            $form_dir_file = $dir_file_logbook . $form_file;
+        // //-- LOGBOOK
+        // foreach ($form_file_logbook as $key => $v) {
+        //     $norut = $key + 1;
+        //     $form_file = 'FILE_LOGBOOK_' . $laporan_bulanan->id_laporan_bulanan  . '_' . $form_id_user  . '_' . $norut . '_.' . $v->extension();
+        //     $form_dir_file = $dir_file_logbook . $form_file;
 
-            $laporan_bulanan_file = new MLaporanBulananFile();
-            $laporan_bulanan_file->id_laporan_bulanan = $laporan_bulanan->id_laporan_bulanan;
-            $laporan_bulanan_file->id_user = $form_id_user;
-            $laporan_bulanan_file->norut = $norut;
-            $laporan_bulanan_file->tipe_file = 'logbook';
-            $laporan_bulanan_file->file1 = $form_dir_file;
-            // $laporan_bulanan_file->file2 = 0;
-            // $laporan_bulanan_file->file3 = 0;
-            $laporan_bulanan_file->status_laporan_bulanan_file = 1;
-            $laporan_bulanan_file->statusactive_laporan_bulanan_file = 1;
-            $laporan_bulanan_file->user_created = $form_username;
-            // $laporan_bulanan_file->user_updated = 0;
+        //     $laporan_bulanan_file = new MLaporanBulananFile();
+        //     $laporan_bulanan_file->id_laporan_bulanan = $laporan_bulanan->id_laporan_bulanan;
+        //     $laporan_bulanan_file->id_user = $form_id_user;
+        //     $laporan_bulanan_file->norut = $norut;
+        //     $laporan_bulanan_file->tipe_file = 'logbook';
+        //     $laporan_bulanan_file->file1 = $form_dir_file;
+        //     // $laporan_bulanan_file->file2 = 0;
+        //     // $laporan_bulanan_file->file3 = 0;
+        //     $laporan_bulanan_file->status_laporan_bulanan_file = 1;
+        //     $laporan_bulanan_file->statusactive_laporan_bulanan_file = 1;
+        //     $laporan_bulanan_file->user_created = $form_username;
+        //     // $laporan_bulanan_file->user_updated = 0;
 
-            $v->move($dir_file_logbook_move, $form_file);
-            $laporan_bulanan_file->save();
-        }
+        //     $v->move($dir_file_logbook_move, $form_file);
+        //     $laporan_bulanan_file->save();
+        // }
 
         $resp =
             MyRB::asSuccess(200)
@@ -458,18 +480,18 @@ class LaporanBulananController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'id_transporter' => 'required',
-            'nama_pemusnah' => 'required',
-            'metode_pemusnah' => 'required',
+            // 'nama_pemusnah' => 'required',
+            // 'metode_pemusnah' => 'required',
             'berat_limbah_total' =>  'required',
-            'punya_penyimpanan_tps' =>  'required',
+            // 'punya_penyimpanan_tps' =>  'required',
             // 'ukuran_penyimpanan_tps' =>  'required',
-            'punya_pemusnahan_sendiri' =>  'required',
+            // 'punya_pemusnahan_sendiri' =>  'required',
             // 'ukuran_pemusnahan_sendiri' =>  'required',
             'limbah_b3_covid' =>  'required',
             'limbah_b3_noncovid' =>  'required',
             'debit_limbah_cair' =>  'required',
-            'kapasitas_ipal' =>  'required',
-            'memenuhi_syarat' =>  'required',
+            // 'kapasitas_ipal' =>  'required',
+            // 'memenuhi_syarat' =>  'required',
             'catatan' => 'required',
             'periode' => 'required',
             'tahun' => 'required',
@@ -478,8 +500,15 @@ class LaporanBulananController extends Controller
             'limbah_padat_catatan' => 'required',
             'limbah_padat_berat' => 'required',
 
-            'file_manifest' => 'required|max:10120',
-            'file_logbook' => 'required|max:10120',
+            // 'file_manifest' => 'required|max:10120',
+            // 'file_logbook' => 'required|max:10120',
+            'link_input_manifest' => 'required',
+            'link_input_logbook' => 'required',
+            'link_input_lab_ipal' => 'required',
+            'link_input_lab_lain' => 'required',
+            'link_input_dokumen_lingkungan_rs' => 'required',
+            'link_input_swa_pantau' => 'required',
+            'link_input_ujilab_cair' => 'required',
             'oldid' => 'required', // id_laporan_bulanan
         ]);
 
@@ -528,6 +557,14 @@ class LaporanBulananController extends Controller
         // file
         $form_file_manifest = $request->file_manifest;
         $form_file_logbook = $request->file_logbook;
+
+        $form_link_input_manifest = $request->link_input_manifest;
+        $form_link_input_logbook = $request->link_input_logbook;
+        $form_link_input_lab_ipal = $request->link_input_lab_ipal;
+        $form_link_input_lab_lain = $request->link_input_lab_lain;
+        $form_link_input_dokumen_lingkungan_rs = $request->link_input_dokumen_lingkungan_rs;
+        $form_link_input_swa_pantau = $request->link_input_swa_pantau;
+        $form_link_input_ujilab_cair = $request->link_input_ujilab_cair;
 
         // $laporanBulanan = MLaporanBulanan::where(['id_user' => $form_id_user, 'periode' => $form_periode, 'tahun' => $form_tahun, 'statusactive_laporan_bulanan' => 1])->get();
 
@@ -621,6 +658,13 @@ class LaporanBulananController extends Controller
         $laporan_bulanan->statusactive_laporan_bulanan = 1; // integer
         // $laporan_bulanan->user_created = $form_username; // string
         $laporan_bulanan->user_updated = $form_username; // string
+        $laporan_bulanan->link_input_manifest = $form_link_input_manifest;
+        $laporan_bulanan->link_input_logbook = $form_link_input_logbook;
+        $laporan_bulanan->link_input_lab_ipal = $form_link_input_lab_ipal;
+        $laporan_bulanan->link_input_lab_lain = $form_link_input_lab_lain;
+        $laporan_bulanan->link_input_dokumen_lingkungan_rs = $form_link_input_dokumen_lingkungan_rs;
+        $laporan_bulanan->link_input_swa_pantau = $form_link_input_swa_pantau;
+        $laporan_bulanan->link_input_ujilab_cair = $form_link_input_ujilab_cair;
         $laporan_bulanan->save();
 
         foreach ($form_limbah_padat_kategori as $key => $v) {
@@ -643,50 +687,50 @@ class LaporanBulananController extends Controller
         }
 
         // -- MANIFEST
-        foreach ($form_file_manifest as $key => $v) {
-            $norut = $key + 1;
-            $form_file = 'FILE_MANIFEST_' . $laporan_bulanan->id_laporan_bulanan  . '_' . $form_id_user  . '_' . $norut . '_.' . $v->extension();
-            $form_dir_file = $dir_file_manifest . $form_file;
+        // foreach ($form_file_manifest as $key => $v) {
+        //     $norut = $key + 1;
+        //     $form_file = 'FILE_MANIFEST_' . $laporan_bulanan->id_laporan_bulanan  . '_' . $form_id_user  . '_' . $norut . '_.' . $v->extension();
+        //     $form_dir_file = $dir_file_manifest . $form_file;
 
-            $laporan_bulanan_file = new MLaporanBulananFile();
-            $laporan_bulanan_file->id_laporan_bulanan = $laporan_bulanan->id_laporan_bulanan;
-            $laporan_bulanan_file->id_user = $form_id_user;
-            $laporan_bulanan_file->norut = $norut;
-            $laporan_bulanan_file->tipe_file = 'manifest';
-            $laporan_bulanan_file->file1 = $form_dir_file;
-            // $laporan_bulanan_file->file2 = 0;
-            // $laporan_bulanan_file->file3 = 0;
-            $laporan_bulanan_file->status_laporan_bulanan_file = 1;
-            $laporan_bulanan_file->statusactive_laporan_bulanan_file = 1;
-            $laporan_bulanan_file->user_created = $form_username;
-            // $laporan_bulanan_file->user_updated = 0;
+        //     $laporan_bulanan_file = new MLaporanBulananFile();
+        //     $laporan_bulanan_file->id_laporan_bulanan = $laporan_bulanan->id_laporan_bulanan;
+        //     $laporan_bulanan_file->id_user = $form_id_user;
+        //     $laporan_bulanan_file->norut = $norut;
+        //     $laporan_bulanan_file->tipe_file = 'manifest';
+        //     $laporan_bulanan_file->file1 = $form_dir_file;
+        //     // $laporan_bulanan_file->file2 = 0;
+        //     // $laporan_bulanan_file->file3 = 0;
+        //     $laporan_bulanan_file->status_laporan_bulanan_file = 1;
+        //     $laporan_bulanan_file->statusactive_laporan_bulanan_file = 1;
+        //     $laporan_bulanan_file->user_created = $form_username;
+        //     // $laporan_bulanan_file->user_updated = 0;
 
-            $v->move($dir_file_manifest_move, $form_file);
-            $laporan_bulanan_file->save();
-        }
+        //     $v->move($dir_file_manifest_move, $form_file);
+        //     $laporan_bulanan_file->save();
+        // }
 
-        //-- LOGBOOK
-        foreach ($form_file_logbook as $key => $v) {
-            $norut = $key + 1;
-            $form_file = 'FILE_LOGBOOK_' . $laporan_bulanan->id_laporan_bulanan  . '_' . $form_id_user  . '_' . $norut . '_.' . $v->extension();
-            $form_dir_file = $dir_file_logbook . $form_file;
+        // //-- LOGBOOK
+        // foreach ($form_file_logbook as $key => $v) {
+        //     $norut = $key + 1;
+        //     $form_file = 'FILE_LOGBOOK_' . $laporan_bulanan->id_laporan_bulanan  . '_' . $form_id_user  . '_' . $norut . '_.' . $v->extension();
+        //     $form_dir_file = $dir_file_logbook . $form_file;
 
-            $laporan_bulanan_file = new MLaporanBulananFile();
-            $laporan_bulanan_file->id_laporan_bulanan = $laporan_bulanan->id_laporan_bulanan;
-            $laporan_bulanan_file->id_user = $form_id_user;
-            $laporan_bulanan_file->norut = $norut;
-            $laporan_bulanan_file->tipe_file = 'logbook';
-            $laporan_bulanan_file->file1 = $form_dir_file;
-            // $laporan_bulanan_file->file2 = 0;
-            // $laporan_bulanan_file->file3 = 0;
-            $laporan_bulanan_file->status_laporan_bulanan_file = 1;
-            $laporan_bulanan_file->statusactive_laporan_bulanan_file = 1;
-            $laporan_bulanan_file->user_created = $form_username;
-            // $laporan_bulanan_file->user_updated = 0;
+        //     $laporan_bulanan_file = new MLaporanBulananFile();
+        //     $laporan_bulanan_file->id_laporan_bulanan = $laporan_bulanan->id_laporan_bulanan;
+        //     $laporan_bulanan_file->id_user = $form_id_user;
+        //     $laporan_bulanan_file->norut = $norut;
+        //     $laporan_bulanan_file->tipe_file = 'logbook';
+        //     $laporan_bulanan_file->file1 = $form_dir_file;
+        //     // $laporan_bulanan_file->file2 = 0;
+        //     // $laporan_bulanan_file->file3 = 0;
+        //     $laporan_bulanan_file->status_laporan_bulanan_file = 1;
+        //     $laporan_bulanan_file->statusactive_laporan_bulanan_file = 1;
+        //     $laporan_bulanan_file->user_created = $form_username;
+        //     // $laporan_bulanan_file->user_updated = 0;
 
-            $v->move($dir_file_logbook_move, $form_file);
-            $laporan_bulanan_file->save();
-        }
+        //     $v->move($dir_file_logbook_move, $form_file);
+        //     $laporan_bulanan_file->save();
+        // }
 
         $resp =
             MyRB::asSuccess(200)

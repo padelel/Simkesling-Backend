@@ -101,6 +101,23 @@ class PusRsController extends Controller
             'username' => 'required',
             'password' => 'required',
             'nama_user' => 'required',
+            'link_manifest' => 'required',
+            'link_logbook' => 'required',
+            'link_lab_ipal' => 'required',
+            'link_lab_lain' => 'required',
+            'link_dokumen_lingkungan_rs' => 'required',
+            'link_izin_transporter' => 'required',
+            'link_mou_transporter' => 'required',
+            'link_swa_pantau' => 'required',
+            'link_lab_limbah_cair' => 'required',
+            'link_izin_ipal' => 'required',
+            'link_izin_tps' => 'required',
+            'link_ukl' => 'required',
+            'link_upl' => 'required',
+            // 'link1' => 'required',
+            // 'link2' => 'required',
+            // 'link3' => 'required',
+            'kapasitas_ipal' => 'required',
             'level' => 'required|in:2,3',
         ];
 
@@ -150,6 +167,23 @@ class PusRsController extends Controller
         $form_notlp = $request->notlp;
         $form_nohp = $request->nohp;
         $form_email = $request->email;
+        $form_link_manifest = $request->link_manifest;
+        $form_link_logbook = $request->link_logbook;
+        $form_link_lab_ipal = $request->link_lab_ipal;
+        $form_link_lab_lain = $request->link_lab_lain;
+        $form_link_dokumen_lingkungan_rs = $request->link_dokumen_lingkungan_rs;
+        $form_link_izin_transporter = $request->link_izin_transporter;
+        $form_link_mou_transporter = $request->link_mou_transporter;
+        $form_link_swa_pantau = $request->link_swa_pantau;
+        $form_link_lab_limbah_cair = $request->link_lab_limbah_cair;
+        $form_link1 = $request->link1;
+        $form_link2 = $request->link2;
+        $form_link3 = $request->link3;
+        $form_link_izin_ipal = $request->link_izin_ipal;
+        $form_link_izin_tps = $request->link_izin_tps;
+        $form_link_ukl = $request->link_ukl;
+        $form_link_upl = $request->link_upl;
+        $form_kapasitas_ipal = $request->kapasitas_ipal;
 
         // upload file
         $form_file_izin_ipal = $request->file_izin_ipal;
@@ -175,6 +209,23 @@ class PusRsController extends Controller
         $tableuser->notlp = $form_notlp; // string
         $tableuser->nohp = $form_nohp; // string
         $tableuser->email = $form_email; // string
+        $tableuser->link_manifest = $form_link_manifest; // string
+        $tableuser->link_logbook = $form_link_logbook; // string
+        $tableuser->link_lab_ipal = $form_link_lab_ipal; // string
+        $tableuser->link_lab_lain = $form_link_lab_lain; // string
+        $tableuser->link_dokumen_lingkungan_rs = $form_link_dokumen_lingkungan_rs; // string
+        $tableuser->link_izin_transporter = $form_link_izin_transporter; // string
+        $tableuser->link_mou_transporter = $form_link_mou_transporter; // string
+        $tableuser->link_swa_pantau = $form_link_swa_pantau; // string
+        $tableuser->link_lab_limbah_cair = $form_link_lab_limbah_cair; // string
+        $tableuser->link1 = $form_link1; // string
+        $tableuser->link2 = $form_link2; // string
+        $tableuser->link3 = $form_link3; // string
+        $tableuser->link_izin_ipal = $form_link_izin_ipal; // string
+        $tableuser->link_izin_tps = $form_link_izin_tps; // string
+        $tableuser->link_ukl = $form_link_ukl; // string
+        $tableuser->link_upl = $form_link_upl; // string
+        $tableuser->kapasitas_ipal = $form_kapasitas_ipal; // string
         // $tableuser->izin_ipal = $form_file_izin_ipal_nama; // string
         // $tableuser->izin_tps = $form_file_izin_tps_nama; // string
         $tableuser->status_user = 1; // integer
@@ -226,6 +277,20 @@ class PusRsController extends Controller
             'username' => 'required',
             'nama_user' => 'required',
             'level' => 'required|in:2,3',
+            'link_manifest' => 'required',
+            'link_logbook' => 'required',
+            'link_lab_ipal' => 'required',
+            'link_lab_lain' => 'required',
+            'link_dokumen_lingkungan_rs' => 'required',
+            'link_izin_transporter' => 'required',
+            'link_mou_transporter' => 'required',
+            'link_swa_pantau' => 'required',
+            'link_lab_limbah_cair' => 'required',
+            'link_izin_ipal' => 'required',
+            'link_izin_tps' => 'required',
+            'link_ukl' => 'required',
+            'link_upl' => 'required',
+            'kapasitas_ipal' => 'required',
             'oldid' => 'required',
         ];
 
@@ -276,6 +341,23 @@ class PusRsController extends Controller
         $form_notlp = $request->notlp;
         $form_nohp = $request->nohp;
         $form_email = $request->email;
+        $form_link_manifest = $request->link_manifest;
+        $form_link_logbook = $request->link_logbook;
+        $form_link_lab_ipal = $request->link_lab_ipal;
+        $form_link_lab_lain = $request->link_lab_lain;
+        $form_link_dokumen_lingkungan_rs = $request->link_dokumen_lingkungan_rs;
+        $form_link_izin_transporter = $request->link_izin_transporter;
+        $form_link_mou_transporter = $request->link_mou_transporter;
+        $form_link_swa_pantau = $request->link_swa_pantau;
+        $form_link_lab_limbah_cair = $request->link_lab_limbah_cair;
+        $form_link1 = $request->link1;
+        $form_link2 = $request->link2;
+        $form_link3 = $request->link3;
+        $form_link_izin_ipal = $request->link_izin_ipal;
+        $form_link_izin_tps = $request->link_izin_tps;
+        $form_link_ukl = $request->link_ukl;
+        $form_link_upl = $request->link_upl;
+        $form_kapasitas_ipal = $request->kapasitas_ipal;
 
         // upload file
         $form_file_izin_ipal = $request->file_izin_ipal;
@@ -311,6 +393,23 @@ class PusRsController extends Controller
         $tableuser->notlp = $form_notlp; // string
         $tableuser->nohp = $form_nohp; // string
         $tableuser->email = $form_email; // string
+        $tableuser->link_manifest = $form_link_manifest; // string
+        $tableuser->link_logbook = $form_link_logbook; // string
+        $tableuser->link_lab_ipal = $form_link_lab_ipal; // string
+        $tableuser->link_lab_lain = $form_link_lab_lain; // string
+        $tableuser->link_dokumen_lingkungan_rs = $form_link_dokumen_lingkungan_rs; // string
+        $tableuser->link_izin_transporter = $form_link_izin_transporter; // string
+        $tableuser->link_mou_transporter = $form_link_mou_transporter; // string
+        $tableuser->link_swa_pantau = $form_link_swa_pantau; // string
+        $tableuser->link_lab_limbah_cair = $form_link_lab_limbah_cair; // string
+        $tableuser->link1 = $form_link1; // string
+        $tableuser->link2 = $form_link2; // string
+        $tableuser->link3 = $form_link3; // string
+        $tableuser->link_izin_ipal = $form_link_izin_ipal; // string
+        $tableuser->link_izin_tps = $form_link_izin_tps; // string
+        $tableuser->link_ukl = $form_link_ukl; // string
+        $tableuser->link_upl = $form_link_upl; // string
+        $tableuser->kapasitas_ipal = $form_kapasitas_ipal; // string
         // $tableuser->izin_ipal = $form_file_izin_ipal_nama; // string
         // $tableuser->izin_tps = $form_file_izin_tps_nama; // string
         // $tableuser->status_user = 1; // integer
