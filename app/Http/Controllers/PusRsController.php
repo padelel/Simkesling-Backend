@@ -357,6 +357,8 @@ class PusRsController extends Controller
         $form_link_izin_tps = $request->link_izin_tps;
         $form_link_ukl = $request->link_ukl;
         $form_link_upl = $request->link_upl;
+        $form_link_input_izin_ipal = ($request->link_input_izin_ipal == null) ? null : $request->link_input_izin_ipal;
+        $form_link_input_izin_tps = ($request->link_input_izin_tps == null) ? null : $request->link_input_izin_tps;
         $form_kapasitas_ipal = $request->kapasitas_ipal;
 
         // upload file
@@ -407,6 +409,12 @@ class PusRsController extends Controller
         $tableuser->link3 = $form_link3; // string
         $tableuser->link_izin_ipal = $form_link_izin_ipal; // string
         $tableuser->link_izin_tps = $form_link_izin_tps; // string
+        if ($form_link_input_izin_ipal != null) {
+            $tableuser->link_input_izin_ipal = $form_link_input_izin_ipal; // string
+        }
+        if ($form_link_input_izin_tps != null) {
+            $tableuser->link_input_izin_tps = $form_link_input_izin_tps; // string
+        }
         $tableuser->link_ukl = $form_link_ukl; // string
         $tableuser->link_upl = $form_link_upl; // string
         $tableuser->kapasitas_ipal = $form_kapasitas_ipal; // string
