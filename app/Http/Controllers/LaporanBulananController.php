@@ -322,9 +322,9 @@ class LaporanBulananController extends Controller
         $form_tahun = $request->tahun;
 
         // detail limbat padat
-        $form_limbah_padat_kategori = $request->limbah_padat_kategori;
-        $form_limbah_padat_catatan = $request->limbah_padat_catatan;
-        $form_limbah_padat_berat = $request->limbah_padat_berat;
+        $form_limbah_padat_kategori = $request->limbah_padat_kategori ?? [];
+        $form_limbah_padat_catatan = $request->limbah_padat_catatan ?? [];
+        $form_limbah_padat_berat = $request->limbah_padat_berat ?? [];
 
         // file
         $form_file_manifest = $request->file_manifest;
@@ -550,9 +550,9 @@ class LaporanBulananController extends Controller
         $form_tahun = $request->tahun;
 
         // detail limbat padat
-        $form_limbah_padat_kategori = $request->limbah_padat_kategori;
-        $form_limbah_padat_catatan = $request->limbah_padat_catatan;
-        $form_limbah_padat_berat = $request->limbah_padat_berat;
+        $form_limbah_padat_kategori = $request->limbah_padat_kategori ?? [];
+        $form_limbah_padat_catatan = $request->limbah_padat_catatan ?? [];
+        $form_limbah_padat_berat = $request->limbah_padat_berat ?? [];
 
         // file
         $form_file_manifest = $request->file_manifest;
