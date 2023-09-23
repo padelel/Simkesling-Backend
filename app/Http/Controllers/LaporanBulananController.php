@@ -271,9 +271,9 @@ class LaporanBulananController extends Controller
             'periode' => 'required',
             'tahun' => 'required',
 
-            'limbah_padat_kategori' => 'required',
-            'limbah_padat_catatan' => 'required',
-            'limbah_padat_berat' => 'required',
+            // 'limbah_padat_kategori' => 'required',
+            // 'limbah_padat_catatan' => 'required',
+            // 'limbah_padat_berat' => 'required',
 
             // 'file_manifest' => 'required|max:10120',
             // 'file_logbook' => 'required|max:10120',
@@ -496,9 +496,9 @@ class LaporanBulananController extends Controller
             'periode' => 'required',
             'tahun' => 'required',
 
-            'limbah_padat_kategori' => 'required',
-            'limbah_padat_catatan' => 'required',
-            'limbah_padat_berat' => 'required',
+            // 'limbah_padat_kategori' => 'required',
+            // 'limbah_padat_catatan' => 'required',
+            // 'limbah_padat_berat' => 'required',
 
             // 'file_manifest' => 'required|max:10120',
             // 'file_logbook' => 'required|max:10120',
