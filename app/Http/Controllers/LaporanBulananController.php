@@ -282,8 +282,8 @@ class LaporanBulananController extends Controller
             'link_input_lab_ipal' => 'required',
             'link_input_lab_lain' => 'required',
             'link_input_dokumen_lingkungan_rs' => 'required',
-            'link_input_swa_pantau' => 'required',
-            'link_input_ujilab_cair' => 'required',
+            // 'link_input_swa_pantau' => 'required',
+            // 'link_input_ujilab_cair' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -335,8 +335,8 @@ class LaporanBulananController extends Controller
         $form_link_input_lab_ipal = $request->link_input_lab_ipal;
         $form_link_input_lab_lain = $request->link_input_lab_lain;
         $form_link_input_dokumen_lingkungan_rs = $request->link_input_dokumen_lingkungan_rs;
-        $form_link_input_swa_pantau = $request->link_input_swa_pantau;
-        $form_link_input_ujilab_cair = $request->link_input_ujilab_cair;
+        $form_link_input_swa_pantau = $request->link_input_swa_pantau ?? '';
+        $form_link_input_ujilab_cair = $request->link_input_ujilab_cair ?? '';
 
         $laporanBulanan = MLaporanBulanan::where(['id_user' => $form_id_user, 'periode' => $form_periode, 'tahun' => $form_tahun, 'statusactive_laporan_bulanan' => 1])->get();
 
@@ -507,8 +507,8 @@ class LaporanBulananController extends Controller
             'link_input_lab_ipal' => 'required',
             'link_input_lab_lain' => 'required',
             'link_input_dokumen_lingkungan_rs' => 'required',
-            'link_input_swa_pantau' => 'required',
-            'link_input_ujilab_cair' => 'required',
+            // 'link_input_swa_pantau' => 'required',
+            // 'link_input_ujilab_cair' => 'required',
             'oldid' => 'required', // id_laporan_bulanan
         ]);
 
@@ -563,8 +563,8 @@ class LaporanBulananController extends Controller
         $form_link_input_lab_ipal = $request->link_input_lab_ipal;
         $form_link_input_lab_lain = $request->link_input_lab_lain;
         $form_link_input_dokumen_lingkungan_rs = $request->link_input_dokumen_lingkungan_rs;
-        $form_link_input_swa_pantau = $request->link_input_swa_pantau;
-        $form_link_input_ujilab_cair = $request->link_input_ujilab_cair;
+        $form_link_input_swa_pantau = $request->link_input_swa_pantau ?? '';
+        $form_link_input_ujilab_cair = $request->link_input_ujilab_cair ?? '';
 
         // $laporanBulanan = MLaporanBulanan::where(['id_user' => $form_id_user, 'periode' => $form_periode, 'tahun' => $form_tahun, 'statusactive_laporan_bulanan' => 1])->get();
 
