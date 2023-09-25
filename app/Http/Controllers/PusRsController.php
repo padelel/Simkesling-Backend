@@ -184,6 +184,7 @@ class PusRsController extends Controller
         $form_link_ukl = $request->link_ukl;
         $form_link_upl = $request->link_upl;
         $form_kapasitas_ipal = $request->kapasitas_ipal;
+        $form_link_input_dokumen_lingkungan_rs = $request->link_input_dokumen_lingkungan_rs;
 
         // upload file
         $form_file_izin_ipal = $request->file_izin_ipal;
@@ -226,6 +227,7 @@ class PusRsController extends Controller
         $tableuser->link_ukl = $form_link_ukl; // string
         $tableuser->link_upl = $form_link_upl; // string
         $tableuser->kapasitas_ipal = $form_kapasitas_ipal; // string
+        $tableuser->link_input_dokumen_lingkungan_rs = $form_link_input_dokumen_lingkungan_rs; // string
         // $tableuser->izin_ipal = $form_file_izin_ipal_nama; // string
         // $tableuser->izin_tps = $form_file_izin_tps_nama; // string
         $tableuser->status_user = 1; // integer
@@ -360,6 +362,7 @@ class PusRsController extends Controller
         $form_link_input_izin_ipal = ($request->link_input_izin_ipal == null) ? null : $request->link_input_izin_ipal;
         $form_link_input_izin_tps = ($request->link_input_izin_tps == null) ? null : $request->link_input_izin_tps;
         $form_kapasitas_ipal = $request->kapasitas_ipal;
+        $form_link_input_dokumen_lingkungan_rs = $request->link_input_dokumen_lingkungan_rs;
 
         // upload file
         $form_file_izin_ipal = $request->file_izin_ipal;
@@ -418,6 +421,7 @@ class PusRsController extends Controller
         $tableuser->link_ukl = $form_link_ukl; // string
         $tableuser->link_upl = $form_link_upl; // string
         $tableuser->kapasitas_ipal = $form_kapasitas_ipal; // string
+        $tableuser->link_input_dokumen_lingkungan_rs = $form_link_input_dokumen_lingkungan_rs; // string
         // $tableuser->izin_ipal = $form_file_izin_ipal_nama; // string
         // $tableuser->izin_tps = $form_file_izin_tps_nama; // string
         // $tableuser->status_user = 1; // integer

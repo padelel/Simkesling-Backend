@@ -18,6 +18,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use App\MyResponseBuilder as MyRB;
 use App\MyUtils as MyUtils;
 use Carbon\Carbon;
+use Exception;
 
 class LandingController extends Controller
 {
@@ -153,9 +154,41 @@ class LandingController extends Controller
             $total_limbah = $total_limbah_chart_year->where('periode', $i)->first();
             $total = 0;
             if ($total_limbah) {
-                $total = intval($total_limbah->berat_limbah_total);
+                // $total = intval($total_limbah->berat_limbah_total);
+                try {
+                    $total += floatval($total_limbah->berat_limbah_total ?? '0') ?? 0;
+                } catch (Exception $ex) {
+                }
+                try {
+                    $total += floatval($total_limbah->limbah_b3_noncovid ?? '0') ?? 0;
+                } catch (Exception $ex) {
+                }
+                try {
+                    $total += floatval($total_limbah->limbah_b3_covid ?? '0') ?? 0;
+                } catch (Exception $ex) {
+                }
+                try {
+                    $total += floatval($total_limbah->limbah_b3_nonmedis ?? '0') ?? 0;
+                } catch (Exception $ex) {
+                }
+                try {
+                    $total += floatval($total_limbah->limbah_b3_medis ?? '0') ?? 0;
+                } catch (Exception $ex) {
+                }
+                try {
+                    $total += floatval($total_limbah->limbah_jarum ?? '0') ?? 0;
+                } catch (Exception $ex) {
+                }
+                try {
+                    $total += floatval($total_limbah->limbah_sludge_ipal ?? '0') ?? 0;
+                } catch (Exception $ex) {
+                }
+                try {
+                    $total += floatval($total_limbah->debit_limbah_cair ?? '0') ?? 0;
+                } catch (Exception $ex) {
+                }
             }
-            array_push($laporan['total_limbah_chart_year'], $total);
+            array_push($laporan['total_limbah_chart_year'], round($total, 2));
             array_push($laporan['bulan_nama'], $bulan_nama);
         }
 

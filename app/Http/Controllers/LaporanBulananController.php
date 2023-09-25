@@ -110,6 +110,10 @@ class LaporanBulananController extends Controller
         $laporan_rekapitulasi['total_seluruh_limbah_b3'] = 0;
         $laporan_rekapitulasi['total_seluruh_limbah_covid'] = 0;
         $laporan_rekapitulasi['total_seluruh_limbah_noncovid'] = 0;
+        $laporan_rekapitulasi['total_seluruh_limbah_b3_nonmedis'] = 0;
+        $laporan_rekapitulasi['total_seluruh_limbah_b3_medis'] = 0;
+        $laporan_rekapitulasi['total_seluruh_limbah_jarum'] = 0;
+        $laporan_rekapitulasi['total_seluruh_limbah_sludge_ipal'] = 0;
         $laporan_rekapitulasi['tahun'] = $tahun;
         $laporan_rekapitulasi['laporan'] = [];
         $i_awal = ($periode == null) ? 1 : $periode;
@@ -122,6 +126,10 @@ class LaporanBulananController extends Controller
             $tmpData['total_limbah_b3'] = 0;
             $tmpData['total_limbah_covid'] = 0;
             $tmpData['total_limbah_noncovid'] = 0;
+            $tmpData['total_limbah_b3_nonmedis'] = 0;
+            $tmpData['total_limbah_b3_medis'] = 0;
+            $tmpData['total_limbah_jarum'] = 0;
+            $tmpData['total_limbah_sludge_ipal'] = 0;
             $tmpData['users'] = [];
             foreach ($users as $key => $user) {
                 $dataUser = MUser::find($user->id_user);
@@ -129,17 +137,37 @@ class LaporanBulananController extends Controller
                 $limbahB3Padat = 0;
                 $limbahNonCovid = 0;
                 $limbahCovid = 0;
+                $limbah_b3_nonmedis = 0;
+                $limbah_b3_medis = 0;
+                $limbah_jarum = 0;
+                $limbah_sludge_ipal = 0;
                 if ($laporanBulanan) {
                     try {
                         $limbahB3Padat = floatval($laporanBulanan->berat_limbah_total ?? '0') ?? 0;
                     } catch (Exception $ex) {
                     }
                     try {
-                        $limbahNonCovid = floatval($laporanBulanan->limbah_b3_noncovid) ?? 0;
+                        $limbahNonCovid = floatval($laporanBulanan->limbah_b3_noncovid ?? '0') ?? 0;
                     } catch (Exception $ex) {
                     }
                     try {
-                        $limbahCovid = floatval($laporanBulanan->limbah_b3_covid) ?? 0;
+                        $limbahCovid = floatval($laporanBulanan->limbah_b3_covid ?? '0') ?? 0;
+                    } catch (Exception $ex) {
+                    }
+                    try {
+                        $limbah_b3_nonmedis = floatval($laporanBulanan->limbah_b3_nonmedis ?? '0') ?? 0;
+                    } catch (Exception $ex) {
+                    }
+                    try {
+                        $limbah_b3_medis = floatval($laporanBulanan->limbah_b3_medis ?? '0') ?? 0;
+                    } catch (Exception $ex) {
+                    }
+                    try {
+                        $limbah_jarum = floatval($laporanBulanan->limbah_jarum ?? '0') ?? 0;
+                    } catch (Exception $ex) {
+                    }
+                    try {
+                        $limbah_sludge_ipal = floatval($laporanBulanan->limbah_sludge_ipal ?? '0') ?? 0;
                     } catch (Exception $ex) {
                     }
                 }
@@ -147,10 +175,18 @@ class LaporanBulananController extends Controller
                 $dataUser->limbah_b3 = $limbahB3Padat;
                 $dataUser->limbah_noncovid = $limbahNonCovid;
                 $dataUser->limbah_covid = $limbahCovid;
+                $dataUser->limbah_b3_nonmedis = $limbah_b3_nonmedis;
+                $dataUser->limbah_b3_medis = $limbah_b3_medis;
+                $dataUser->limbah_jarum = $limbah_jarum;
+                $dataUser->limbah_sludge_ipal = $limbah_sludge_ipal;
 
                 $tmpData['total_limbah'] += $limbahB3Padat;
                 $tmpData['total_limbah'] += $limbahNonCovid;
                 $tmpData['total_limbah'] += $limbahCovid;
+                $tmpData['total_limbah'] += $limbah_b3_nonmedis;
+                $tmpData['total_limbah'] += $limbah_b3_medis;
+                $tmpData['total_limbah'] += $limbah_jarum;
+                $tmpData['total_limbah'] += $limbah_sludge_ipal;
                 // dd($limbahB3Padat);
                 // dd($limbahNonCovid);
                 // dd($limbahCovid);
@@ -159,6 +195,10 @@ class LaporanBulananController extends Controller
                 $tmpData['total_limbah_b3'] += $limbahB3Padat;
                 $tmpData['total_limbah_noncovid'] += $limbahNonCovid;
                 $tmpData['total_limbah_covid'] += $limbahCovid;
+                $tmpData['total_limbah_b3_nonmedis'] += $limbah_b3_nonmedis;
+                $tmpData['total_limbah_b3_medis'] += $limbah_b3_medis;
+                $tmpData['total_limbah_jarum'] += $limbah_jarum;
+                $tmpData['total_limbah_sludge_ipal'] += $limbah_sludge_ipal;
 
                 array_push($tmpData['users'], $dataUser);
             }
@@ -166,6 +206,10 @@ class LaporanBulananController extends Controller
             $laporan_rekapitulasi['total_seluruh_limbah_b3'] += $tmpData['total_limbah_b3'];
             $laporan_rekapitulasi['total_seluruh_limbah_covid'] += $tmpData['total_limbah_covid'];
             $laporan_rekapitulasi['total_seluruh_limbah_noncovid'] += $tmpData['total_limbah_noncovid'];
+            $laporan_rekapitulasi['total_seluruh_limbah_b3_nonmedis'] += $tmpData['total_limbah_b3_nonmedis'];
+            $laporan_rekapitulasi['total_seluruh_limbah_b3_medis'] += $tmpData['total_limbah_b3_medis'];
+            $laporan_rekapitulasi['total_seluruh_limbah_jarum'] += $tmpData['total_limbah_jarum'];
+            $laporan_rekapitulasi['total_seluruh_limbah_sludge_ipal'] += $tmpData['total_limbah_sludge_ipal'];
 
             // total seluruh limbah pertahun
             $laporan_rekapitulasi['total_seluruh_limbah'] += $tmpData['total_limbah'];
@@ -281,7 +325,7 @@ class LaporanBulananController extends Controller
             'link_input_logbook' => 'required',
             'link_input_lab_ipal' => 'required',
             'link_input_lab_lain' => 'required',
-            'link_input_dokumen_lingkungan_rs' => 'required',
+            // 'link_input_dokumen_lingkungan_rs' => 'required',
             // 'link_input_swa_pantau' => 'required',
             // 'link_input_ujilab_cair' => 'required',
         ]);
@@ -337,6 +381,11 @@ class LaporanBulananController extends Controller
         $form_link_input_dokumen_lingkungan_rs = $request->link_input_dokumen_lingkungan_rs;
         $form_link_input_swa_pantau = $request->link_input_swa_pantau ?? '';
         $form_link_input_ujilab_cair = $request->link_input_ujilab_cair ?? '';
+
+        $form_limbah_b3_nonmedis = $request->limbah_b3_nonmedis ?? 0;
+        $form_limbah_b3_medis = $request->limbah_b3_medis ?? 0;
+        $form_limbah_jarum = $request->limbah_jarum ?? 0;
+        $form_limbah_sludge_ipal = $request->limbah_sludge_ipal ?? 0;
 
         $laporanBulanan = MLaporanBulanan::where(['id_user' => $form_id_user, 'periode' => $form_periode, 'tahun' => $form_tahun, 'statusactive_laporan_bulanan' => 1])->get();
 
@@ -400,6 +449,11 @@ class LaporanBulananController extends Controller
         $laporan_bulanan->link_input_dokumen_lingkungan_rs = $form_link_input_dokumen_lingkungan_rs;
         $laporan_bulanan->link_input_swa_pantau = $form_link_input_swa_pantau;
         $laporan_bulanan->link_input_ujilab_cair = $form_link_input_ujilab_cair;
+
+        $laporan_bulanan->limbah_b3_nonmedis = $form_limbah_b3_nonmedis;
+        $laporan_bulanan->limbah_b3_medis = $form_limbah_b3_medis;
+        $laporan_bulanan->limbah_jarum = $form_limbah_jarum;
+        $laporan_bulanan->limbah_sludge_ipal = $form_limbah_sludge_ipal;
         $laporan_bulanan->save();
 
         foreach ($form_limbah_padat_kategori as $key => $v) {
@@ -506,7 +560,7 @@ class LaporanBulananController extends Controller
             'link_input_logbook' => 'required',
             'link_input_lab_ipal' => 'required',
             'link_input_lab_lain' => 'required',
-            'link_input_dokumen_lingkungan_rs' => 'required',
+            // 'link_input_dokumen_lingkungan_rs' => 'required',
             // 'link_input_swa_pantau' => 'required',
             // 'link_input_ujilab_cair' => 'required',
             'oldid' => 'required', // id_laporan_bulanan
@@ -565,6 +619,12 @@ class LaporanBulananController extends Controller
         $form_link_input_dokumen_lingkungan_rs = $request->link_input_dokumen_lingkungan_rs;
         $form_link_input_swa_pantau = $request->link_input_swa_pantau ?? '';
         $form_link_input_ujilab_cair = $request->link_input_ujilab_cair ?? '';
+
+        $form_limbah_b3_nonmedis = $request->limbah_b3_nonmedis ?? 0;
+        $form_limbah_b3_medis = $request->limbah_b3_medis ?? 0;
+        $form_limbah_jarum = $request->limbah_jarum ?? 0;
+        $form_limbah_sludge_ipal = $request->limbah_sludge_ipal ?? 0;
+
 
         // $laporanBulanan = MLaporanBulanan::where(['id_user' => $form_id_user, 'periode' => $form_periode, 'tahun' => $form_tahun, 'statusactive_laporan_bulanan' => 1])->get();
 
@@ -665,6 +725,11 @@ class LaporanBulananController extends Controller
         $laporan_bulanan->link_input_dokumen_lingkungan_rs = $form_link_input_dokumen_lingkungan_rs;
         $laporan_bulanan->link_input_swa_pantau = $form_link_input_swa_pantau;
         $laporan_bulanan->link_input_ujilab_cair = $form_link_input_ujilab_cair;
+
+        $laporan_bulanan->limbah_b3_nonmedis = $form_limbah_b3_nonmedis;
+        $laporan_bulanan->limbah_b3_medis = $form_limbah_b3_medis;
+        $laporan_bulanan->limbah_jarum = $form_limbah_jarum;
+        $laporan_bulanan->limbah_sludge_ipal = $form_limbah_sludge_ipal;
         $laporan_bulanan->save();
 
         foreach ($form_limbah_padat_kategori as $key => $v) {
