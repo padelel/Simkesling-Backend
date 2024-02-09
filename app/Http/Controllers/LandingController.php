@@ -149,48 +149,74 @@ class LandingController extends Controller
         }
 
         $total_limbah_chart_year = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where('id_user', $form_id_user)->where('tahun', $tahun)->get();
+
+        $arr_berat_limbah_total = [];
+        $arr_limbah_b3_covid = [];
+        $arr_limbah_b3_nonmedis = [];
+        $arr_limbah_jarum = [];
+        $arr_limbah_sludge_ipal = [];
+        $arr_debit_limbah_cair = [];
         for ($i = 1; $i <= 12; $i++) {
             $bulan_nama = Carbon::create()->day(1)->month($i)->format('F');
             $total_limbah = $total_limbah_chart_year->where('periode', $i)->first();
             $total = 0;
+
+            // {
+            //     name: 'PRODUCT A',
+            //     data: [44, 55, 41, 67, 22, 43]
+            //   }
+            $val_berat_limbah_total = 0;
+            $val_limbah_b3_covid = 0;
+            $val_limbah_b3_nonmedis = 0;
+            $val_limbah_jarum = 0;
+            $val_limbah_sludge_ipal = 0;
+            $val_debit_limbah_cair = 0;
             if ($total_limbah) {
-                // $total = intval($total_limbah->berat_limbah_total);
                 try {
-                    $total += floatval($total_limbah->berat_limbah_total ?? '0') ?? 0;
+                    $val_berat_limbah_total = floatval($total_limbah->berat_limbah_total ?? '0') ?? 0;
                 } catch (Exception $ex) {
                 }
                 try {
-                    $total += floatval($total_limbah->limbah_b3_noncovid ?? '0') ?? 0;
+                    $val_limbah_b3_covid = floatval($total_limbah->limbah_b3_covid ?? '0') ?? 0;
                 } catch (Exception $ex) {
                 }
                 try {
-                    $total += floatval($total_limbah->limbah_b3_covid ?? '0') ?? 0;
+                    $val_limbah_b3_nonmedis = floatval($total_limbah->limbah_b3_nonmedis ?? '0') ?? 0;
                 } catch (Exception $ex) {
                 }
                 try {
-                    $total += floatval($total_limbah->limbah_b3_nonmedis ?? '0') ?? 0;
+                    $val_limbah_jarum = floatval($total_limbah->limbah_jarum ?? '0') ?? 0;
                 } catch (Exception $ex) {
                 }
                 try {
-                    $total += floatval($total_limbah->limbah_b3_medis ?? '0') ?? 0;
+                    $val_limbah_sludge_ipal = floatval($total_limbah->limbah_sludge_ipal ?? '0') ?? 0;
                 } catch (Exception $ex) {
                 }
                 try {
-                    $total += floatval($total_limbah->limbah_jarum ?? '0') ?? 0;
-                } catch (Exception $ex) {
-                }
-                try {
-                    $total += floatval($total_limbah->limbah_sludge_ipal ?? '0') ?? 0;
-                } catch (Exception $ex) {
-                }
-                try {
-                    $total += floatval($total_limbah->debit_limbah_cair ?? '0') ?? 0;
+                    $val_debit_limbah_cair = floatval($total_limbah->debit_limbah_cair ?? '0') ?? 0;
                 } catch (Exception $ex) {
                 }
             }
-            array_push($laporan['total_limbah_chart_year'], round($total, 2));
+            array_push($arr_berat_limbah_total, $val_berat_limbah_total);
+            array_push($arr_limbah_b3_covid, $val_limbah_b3_covid);
+            array_push($arr_limbah_b3_nonmedis, $val_limbah_b3_nonmedis);
+            array_push($arr_limbah_jarum, $val_limbah_jarum);
+            array_push($arr_limbah_sludge_ipal, $val_limbah_sludge_ipal);
+            array_push($arr_debit_limbah_cair, $val_debit_limbah_cair);
+
+            // array_push($laporan['total_limbah_chart_year'], round($total, 2));
             array_push($laporan['bulan_nama'], $bulan_nama);
         }
+        $arr_jsn = [
+            ['name' => 'Total Limbah Padat Infeksius', 'data' => $arr_berat_limbah_total],
+            ['name' => 'Total Limbah Covid', 'data' => $arr_limbah_b3_covid],
+            ['name' => 'Total Limbat Padat Non Infeksius', 'data' => $arr_limbah_b3_nonmedis],
+            ['name' => 'Total Limbah Jarum', 'data' => $arr_limbah_jarum],
+            ['name' => 'Total Limbah Sludge IPAL', 'data' => $arr_limbah_sludge_ipal],
+            ['name' => 'Total Limbah Cair', 'data' => $arr_debit_limbah_cair],
+        ];
+        $laporan['total_limbah_chart_year'] = $arr_jsn;
+        // dd($laporan);
 
         return MyRB::asSuccess(200)
             ->withMessage('Success get data.!')

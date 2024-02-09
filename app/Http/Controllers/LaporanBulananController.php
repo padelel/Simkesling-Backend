@@ -71,7 +71,41 @@ class LaporanBulananController extends Controller
             $laporanBulananFile = MLaporanBulananFile::where('id_laporan_bulanan', $v->id_laporan_bulanan)->get();
             $v->file_manifest = $laporanBulananFile->where('tipe_file', 'manifest')->values()->toArray();
             $v->file_logbook = $laporanBulananFile->where('tipe_file', 'logbook')->values()->toArray();
+
+            $berat_limbah_total = 0;
+            $limbah_b3_covid = 0;
+            $limbah_b3_nonmedis = 0;
+            $limbah_jarum = 0;
+            $limbah_sludge_ipal = 0;
+            $debit_limbah_cair = 0;
+            try {
+                $berat_limbah_total = floatval($v->berat_limbah_total ?? '0') ?? 0;
+            } catch (Exception $ex) {
+            }
+            try {
+                $limbah_b3_covid = floatval($v->limbah_b3_covid ?? '0') ?? 0;
+            } catch (Exception $ex) {
+            }
+            try {
+                $limbah_b3_nonmedis = floatval($v->limbah_b3_nonmedis ?? '0') ?? 0;
+            } catch (Exception $ex) {
+            }
+            try {
+                $limbah_jarum = floatval($v->limbah_jarum ?? '0') ?? 0;
+            } catch (Exception $ex) {
+            }
+            try {
+                $limbah_sludge_ipal = floatval($v->limbah_sludge_ipal ?? '0') ?? 0;
+            } catch (Exception $ex) {
+            }
+            try {
+                $debit_limbah_cair = floatval($v->debit_limbah_cair ?? '0') ?? 0;
+            } catch (Exception $ex) {
+            }
+
+            $v->berat_limbah_total = ($berat_limbah_total + $limbah_b3_covid + $limbah_b3_nonmedis + $limbah_jarum + $limbah_sludge_ipal + $debit_limbah_cair);
         };
+
         return MyRB::asSuccess(200)
             ->withMessage('Success get data.!')
             ->withData($laporanBulanan->values()->toArray())
