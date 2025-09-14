@@ -30,6 +30,11 @@ Route::group(['prefix' => 'v1'], function () {
     Route::post('/login', [LandingController::class, 'prosesLogin'])->name('api.v1.landing.proses-login');
 
     Route::post('/coba', [LandingController::class, 'testApi'])->name('api.v1.testapi');
+    
+    // Test endpoints tanpa middleware untuk testing
+    Route::post('/test/kecamatan', [LandingController::class, 'kecamatanProsesData'])->name('api.v1.test.kecamatan');
+    Route::post('/test/kelurahan', [LandingController::class, 'kelurahanProsesData'])->name('api.v1.test.kelurahan');
+    
     Route::group(['middleware' => 'ceklogin.webnext'], function () {
         Route::post('/', [LandingController::class, 'testApi'])->name('api.v1.testapi');
     });

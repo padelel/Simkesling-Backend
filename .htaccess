@@ -1,0 +1,22 @@
+# BEGIN Force to HTTPS 
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+# END Force to HTTPS
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization, Accept, responseType"
+#Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+
+<IfModule mod_rewrite.c>
+
+#Order Allow,Deny
+#Allow from all
+#AllowOverride all
+#Header set Access-Control-Allow-Origin "*"
+
+RewriteEngine On
+RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+

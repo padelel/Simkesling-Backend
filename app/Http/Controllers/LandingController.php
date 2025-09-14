@@ -151,6 +151,7 @@ class LandingController extends Controller
         $total_limbah_chart_year = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where('id_user', $form_id_user)->where('tahun', $tahun)->get();
 
         $arr_berat_limbah_total = [];
+        $arr_limbah_padat_infeksius = [];
         $arr_limbah_b3_covid = [];
         $arr_limbah_b3_nonmedis = [];
         $arr_limbah_jarum = [];
@@ -166,6 +167,7 @@ class LandingController extends Controller
             //     data: [44, 55, 41, 67, 22, 43]
             //   }
             $val_berat_limbah_total = 0;
+            $val_limbah_padat_infeksius = 0;
             $val_limbah_b3_covid = 0;
             $val_limbah_b3_nonmedis = 0;
             $val_limbah_jarum = 0;
@@ -174,6 +176,10 @@ class LandingController extends Controller
             if ($total_limbah) {
                 try {
                     $val_berat_limbah_total = floatval($total_limbah->berat_limbah_total ?? '0') ?? 0;
+                } catch (Exception $ex) {
+                }
+                try {
+                    $val_limbah_padat_infeksius = floatval($total_limbah->limbah_padat_infeksius ?? '0') ?? 0;
                 } catch (Exception $ex) {
                 }
                 try {
@@ -198,6 +204,7 @@ class LandingController extends Controller
                 }
             }
             array_push($arr_berat_limbah_total, $val_berat_limbah_total);
+            array_push($arr_limbah_padat_infeksius, $val_limbah_padat_infeksius);
             array_push($arr_limbah_b3_covid, $val_limbah_b3_covid);
             array_push($arr_limbah_b3_nonmedis, $val_limbah_b3_nonmedis);
             array_push($arr_limbah_jarum, $val_limbah_jarum);
@@ -208,7 +215,7 @@ class LandingController extends Controller
             array_push($laporan['bulan_nama'], $bulan_nama);
         }
         $arr_jsn = [
-            ['name' => 'Total Limbah Padat Infeksius', 'data' => $arr_berat_limbah_total],
+            ['name' => 'Total Limbah Padat Infeksius', 'data' => $arr_limbah_padat_infeksius],
             ['name' => 'Total Limbah Covid', 'data' => $arr_limbah_b3_covid],
             ['name' => 'Total Limbat Padat Non Infeksius', 'data' => $arr_limbah_b3_nonmedis],
             ['name' => 'Total Limbah Jarum', 'data' => $arr_limbah_jarum],
