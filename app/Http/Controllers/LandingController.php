@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\MKecamatan;
 use App\Models\MKelurahan;
 use App\Models\MLaporanBulanan;
+use App\Models\MLaporanBulananB3Padat;
+use App\Models\MLimbahCair;
 use App\Models\MTransporter;
 use App\Models\MUser;
 use Illuminate\Http\Request;
@@ -130,6 +132,7 @@ class LandingController extends Controller
         // -- form input -- \\
         $form_tahun = (($request->tahun == null) ? null : intval($request->tahun)) ?? intval(date('Y'));
         $form_periode = (($request->periode == null) ? null : intval($request->periode)) ?? intval(date('m'));
+        $form_jenis_limbah = $request->jenis_limbah ?? 'bulanan'; // 'padat', 'cair', or 'bulanan' (default)
 
         $tahun = ($form_tahun == 0 || $form_tahun == '0') ? intval(date('Y')) : $form_tahun;
         $periode = ($form_periode == 0 || $form_periode == '0') ? intval(date('m')) : $form_periode;
@@ -255,10 +258,21 @@ class LandingController extends Controller
             'laporan_periode_nama' => $periode_nama,
             'laporan_periode_tahun' => $tahun,
         ];
-        $laporan_bulanan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0);
-        $laporan_periode_now = $laporan_bulanan->where(['periode' => $periode, 'tahun' => $tahun]);
+        // Determine which table to use based on jenis_limbah
+        if ($form_jenis_limbah == 'padat') {
+            // Use laporan bulanan table for limbah padat (simpler approach)
+            $laporan_query = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0);
+            $laporan_periode_now = $laporan_query->where(['periode' => $periode, 'tahun' => $tahun]);
+        } elseif ($form_jenis_limbah == 'cair') {
+            $laporan_query = MLimbahCair::where('statusactive_limbah_cair', 1);
+            $laporan_periode_now = $laporan_query->where(['periode' => $periode, 'tahun' => $tahun]);
+        } else {
+            // Default to laporan bulanan for backward compatibility
+            $laporan_query = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0);
+            $laporan_periode_now = $laporan_query->where(['periode' => $periode, 'tahun' => $tahun]);
+        }
+        
         $total_laporan_perperiode = $laporan_periode_now->count();
-
         $user_laporan = $laporan_periode_now->pluck('id_user');
         $user_puskesmas_rs = MUser::where(['statusactive_user' => 1])->where('level', '<>', '1')->whereNotIn('id_user', $user_laporan)->get();
         $total_puskesmas_rs_belum_lapor = $user_puskesmas_rs->count();
@@ -282,8 +296,43 @@ class LandingController extends Controller
 
         $tmp_user = MUser::where(['statusactive_user' => 1])->where('level', '<>', '1')->get();
         foreach ($tmp_user as $data => $value) {
-            $cek_laporan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where('id_user', $value->id_user)->where(['periode' => $periode, 'tahun' => $tahun])->latest()->first();
-            $value->sudah_lapor = ($cek_laporan == null) ? false : true;
+            if ($form_jenis_limbah == 'padat') {
+                // Get all reported months for this user (limbah padat)
+                $reported_months = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)
+                    ->where('id_user', $value->id_user)
+                    ->where('tahun', $tahun)
+                    ->pluck('periode')->toArray();
+                
+                // Find missing months (1-12)
+                $all_months = range(1, 12);
+                $missing_months = array_diff($all_months, $reported_months);
+                
+                $value->sudah_lapor_limbah_padat = (count($missing_months) == 0) ? true : false;
+                $value->missing_months_padat = array_values($missing_months);
+                $value->reported_months_padat = $reported_months;
+                $value->sudah_lapor = $value->sudah_lapor_limbah_padat; // For backward compatibility
+                
+            } elseif ($form_jenis_limbah == 'cair') {
+                // Get all reported months for this user (limbah cair)
+                $reported_months = MLimbahCair::where('statusactive_limbah_cair', 1)
+                    ->where('id_user', $value->id_user)
+                    ->where('tahun', $tahun)
+                    ->pluck('periode')->toArray();
+                
+                // Find missing months (1-12)
+                $all_months = range(1, 12);
+                $missing_months = array_diff($all_months, $reported_months);
+                
+                $value->sudah_lapor_limbah_cair = (count($missing_months) == 0) ? true : false;
+                $value->missing_months_cair = array_values($missing_months);
+                $value->reported_months_cair = $reported_months;
+                $value->sudah_lapor = $value->sudah_lapor_limbah_cair; // For backward compatibility
+                
+            } else {
+                // Default behavior for backward compatibility
+                $cek_laporan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where('id_user', $value->id_user)->where(['periode' => $periode, 'tahun' => $tahun])->latest()->first();
+                $value->sudah_lapor = ($cek_laporan == null) ? false : true;
+            }
         }
 
         $total_chart_puskesmas_rs = [];
@@ -305,9 +354,20 @@ class LandingController extends Controller
 
 
         for ($i = 1; $i <= 12; $i++) {
-            $tmp_user_laporan_bulanan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where(['periode' => $i, 'tahun' => $tahun])->pluck('id_user');
-            $user_puskesmas_rs_belum_lapor = MUser::where(['statusactive_user' => 1])->where('level', '<>', '1')->whereNotIn('id_user', $tmp_user_laporan_bulanan)->get()->count();
-            $user_puskesmas_rs_sudah_lapor = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where(['periode' => $i, 'tahun' => $tahun])->get()->count();
+            // Use appropriate table based on jenis_limbah
+            if ($form_jenis_limbah == 'padat') {
+                // Use laporan bulanan for limbah padat
+                $tmp_user_laporan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where(['periode' => $i, 'tahun' => $tahun])->pluck('id_user');
+                $user_puskesmas_rs_sudah_lapor = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where(['periode' => $i, 'tahun' => $tahun])->get()->count();
+            } elseif ($form_jenis_limbah == 'cair') {
+                $tmp_user_laporan = MLimbahCair::where('statusactive_limbah_cair', 1)->where(['periode' => $i, 'tahun' => $tahun])->pluck('id_user');
+                $user_puskesmas_rs_sudah_lapor = MLimbahCair::where('statusactive_limbah_cair', 1)->where(['periode' => $i, 'tahun' => $tahun])->get()->count();
+            } else {
+                $tmp_user_laporan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where(['periode' => $i, 'tahun' => $tahun])->pluck('id_user');
+                $user_puskesmas_rs_sudah_lapor = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where(['periode' => $i, 'tahun' => $tahun])->get()->count();
+            }
+            
+            $user_puskesmas_rs_belum_lapor = MUser::where(['statusactive_user' => 1])->where('level', '<>', '1')->whereNotIn('id_user', $tmp_user_laporan)->get()->count();
 
             $tmp_user_rs = MUser::where(['statusactive_user' => 1])->where('level', '=', '2')->pluck('id_user');
             $tmp_user_puskesmas = MUser::where(['statusactive_user' => 1])->where('level', '=', '3')->pluck('id_user');

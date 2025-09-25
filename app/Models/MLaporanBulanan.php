@@ -48,6 +48,53 @@ class MLaporanBulanan extends Model
         'limbah_b3_medis',
         'limbah_jarum',
         'limbah_sludge_ipal',
-        'limbah_padat_infeksius'
+        'limbah_padat_infeksius',
+        'limbah_cair_b3'
     ];
+
+    /**
+     * Relationship dengan User (Puskesmas/RS)
+     */
+    public function user()
+    {
+        return $this->belongsTo(MUser::class, 'id_user', 'id_user');
+    }
+
+    /**
+     * Relationship dengan Transporter
+     */
+    public function transporter()
+    {
+        return $this->belongsTo(MTransporter::class, 'id_transporter', 'id_transporter');
+    }
+
+    /**
+     * Scope untuk filter berdasarkan periode dan tahun
+     */
+    public function scopeByPeriode($query, $periode, $tahun)
+    {
+        return $query->where('periode', $periode)->where('tahun', $tahun);
+    }
+
+    /**
+     * Scope untuk filter laporan aktif
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('statusactive_laporan_bulanan', '<>', 0);
+    }
+
+    /**
+     * Accessor untuk total limbah padat (semua jenis limbah padat)
+     */
+    public function getTotalLimbahPadatAttribute()
+    {
+        return (float)($this->limbah_b3_covid ?? 0) + 
+               (float)($this->limbah_b3_noncovid ?? 0) + 
+               (float)($this->limbah_b3_nonmedis ?? 0) + 
+               (float)($this->limbah_b3_medis ?? 0) + 
+               (float)($this->limbah_jarum ?? 0) + 
+               (float)($this->limbah_sludge_ipal ?? 0) + 
+               (float)($this->limbah_padat_infeksius ?? 0);
+    }
 }

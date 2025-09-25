@@ -77,7 +77,7 @@ class LaporanBulananController extends Controller
             $limbah_b3_noncovid = 0;
             $limbah_jarum = 0;
             $limbah_sludge_ipal = 0;
-            $debit_limbah_cair = 0;
+            $limbah_cair_b3 = 0;
             try {
                 $berat_limbah_total = floatval($v->berat_limbah_total ?? '0') ?? 0;
             } catch (Exception $ex) {
@@ -99,7 +99,7 @@ class LaporanBulananController extends Controller
             } catch (Exception $ex) {
             }
             try {
-                $debit_limbah_cair = floatval($v->debit_limbah_cair ?? '0') ?? 0;
+                $limbah_cair_b3 = floatval($v->limbah_cair_b3 ?? '0') ?? 0;
             } catch (Exception $ex) {
             }
 
@@ -109,7 +109,7 @@ class LaporanBulananController extends Controller
             // - limbah_b3_noncovid (limbah B3 non-COVID) 
             // - limbah_jarum (limbah jarum suntik)
             // - limbah_sludge_ipal (limbah sludge IPAL)
-            // - debit_limbah_cair (limbah cair)
+            // - limbah_cair_b3 (limbah cair B3)
             // - limbah_b3_nonmedis (limbah B3 non-medis)
             // Jadi tidak perlu dijumlahkan lagi untuk menghindari double counting
             $v->total_keseluruhan_limbah = $berat_limbah_total;
@@ -120,7 +120,7 @@ class LaporanBulananController extends Controller
             $v->limbah_b3_noncovid = $limbah_b3_noncovid;
             $v->limbah_jarum = $limbah_jarum;
             $v->limbah_sludge_ipal = $limbah_sludge_ipal;
-            $v->debit_limbah_cair = $debit_limbah_cair;
+            $v->limbah_cair_b3 = $limbah_cair_b3;
         };
 
         return MyRB::asSuccess(200)
@@ -146,16 +146,28 @@ class LaporanBulananController extends Controller
         $tahun = $form_tahun;
         $periode = $form_periode;
         $periode_nama = Carbon::create()->day(1)->month($periode)->format('F');
-        // dd($periode);
-        // dd($tahun);
 
-        $users = MUser::where(['statusactive_user' => 1])->where('level', '<>', '1');
-        // dd($form_search_tempat);
+        // OPTIMIZATION: Use eager loading to reduce N+1 queries
+        $users = MUser::where(['statusactive_user' => 1])
+            ->where('level', '<>', '1');
+        
         if ($form_search_tempat != null && strlen($form_search_tempat) > 0) {
             $users->where('nama_user', 'like', '%' . $form_search_tempat . '%');
         }
         $users = $users->get();
-        // dd($users);
+
+        // OPTIMIZATION: Preload all laporan bulanan data for the year to reduce database queries
+        $i_awal = ($periode == null) ? 1 : $periode;
+        $i_akhir = ($periode == null) ? 12 : $periode;
+        
+        $userIds = $users->pluck('id_user')->toArray();
+        $laporanBulananData = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)
+            ->whereIn('id_user', $userIds)
+            ->where('tahun', $tahun)
+            ->whereBetween('periode', [$i_awal, $i_akhir])
+            ->get()
+            ->groupBy(['id_user', 'periode']);
+
         $laporan_rekapitulasi['users'] = $users;
         $laporan_rekapitulasi['total_seluruh_limbah'] = 0;
         $laporan_rekapitulasi['total_seluruh_limbah_b3'] = 0;
@@ -168,8 +180,7 @@ class LaporanBulananController extends Controller
         $laporan_rekapitulasi['total_seluruh_limbah_padat_infeksius'] = 0;
         $laporan_rekapitulasi['tahun'] = $tahun;
         $laporan_rekapitulasi['laporan'] = [];
-        $i_awal = ($periode == null) ? 1 : $periode;
-        $i_akhir = ($periode == null) ? 12 : $periode;
+
         for ($i = $i_awal; $i <= $i_akhir; $i++) {
             $periode_nama = Carbon::create()->day(1)->month($i)->format('F');
             $tmpData['periode'] = $i;
@@ -184,50 +195,24 @@ class LaporanBulananController extends Controller
             $tmpData['total_limbah_sludge_ipal'] = 0;
             $tmpData['total_limbah_padat_infeksius'] = 0;
             $tmpData['users'] = [];
+            
             foreach ($users as $key => $user) {
-                $dataUser = MUser::find($user->id_user);
-                $laporanBulanan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0)->where(['id_user' => $user->id_user, 'periode' => $i, 'tahun' => $tahun])->latest()->first();
-                $limbahB3Padat = 0;
-                $limbahNonCovid = 0;
-                $limbahCovid = 0;
-                $limbah_b3_noncovid = 0;
-                $limbah_b3_medis = 0;
-                $limbah_jarum = 0;
-                $limbah_sludge_ipal = 0;
-                if ($laporanBulanan) {
-                    try {
-                        $limbahB3Padat = floatval($laporanBulanan->berat_limbah_total ?? '0') ?? 0;
-                    } catch (Exception $ex) {
-                    }
-                    try {
-                        $limbahNonCovid = floatval($laporanBulanan->limbah_b3_noncovid ?? '0') ?? 0;
-                    } catch (Exception $ex) {
-                    }
-                    try {
-                        $limbahCovid = floatval($laporanBulanan->limbah_b3_covid ?? '0') ?? 0;
-                    } catch (Exception $ex) {
-                    }
-                    try {
-                        $limbah_b3_noncovid = floatval($laporanBulanan->limbah_b3_noncovid ?? '0') ?? 0;
-                    } catch (Exception $ex) {
-                    }
-                    try {
-                        $limbah_b3_medis = floatval($laporanBulanan->limbah_b3_medis ?? '0') ?? 0;
-                    } catch (Exception $ex) {
-                    }
-                    try {
-                        $limbah_jarum = floatval($laporanBulanan->limbah_jarum ?? '0') ?? 0;
-                    } catch (Exception $ex) {
-                    }
-                    try {
-                        $limbah_sludge_ipal = floatval($laporanBulanan->limbah_sludge_ipal ?? '0') ?? 0;
-                    } catch (Exception $ex) {
-                    }
-                    try {
-                        $limbah_padat_infeksius = floatval($laporanBulanan->limbah_padat_infeksius ?? '0') ?? 0;
-                    } catch (Exception $ex) {
-                    }
-                }
+                $dataUser = clone $user; // Use clone to avoid modifying original user object
+                
+                // OPTIMIZATION: Get laporan from preloaded data instead of database query
+                $laporanBulanan = $laporanBulananData[$user->id_user][$i] ?? collect();
+                $laporanBulanan = $laporanBulanan->first();
+                
+                // OPTIMIZATION: Use helper method to safely extract float values
+                $limbahB3Padat = $this->safeFloatValue($laporanBulanan, 'berat_limbah_total');
+                $limbahNonCovid = $this->safeFloatValue($laporanBulanan, 'limbah_b3_noncovid');
+                $limbahCovid = $this->safeFloatValue($laporanBulanan, 'limbah_b3_covid');
+                $limbah_b3_noncovid = $this->safeFloatValue($laporanBulanan, 'limbah_b3_noncovid');
+                $limbah_b3_medis = $this->safeFloatValue($laporanBulanan, 'limbah_b3_medis');
+                $limbah_jarum = $this->safeFloatValue($laporanBulanan, 'limbah_jarum');
+                $limbah_sludge_ipal = $this->safeFloatValue($laporanBulanan, 'limbah_sludge_ipal');
+                $limbah_padat_infeksius = $this->safeFloatValue($laporanBulanan, 'limbah_padat_infeksius');
+
                 $dataUser->limbah = $laporanBulanan;
                 $dataUser->limbah_b3 = $limbahB3Padat;
                 $dataUser->limbah_noncovid = $limbahNonCovid;
@@ -239,14 +224,7 @@ class LaporanBulananController extends Controller
                 $dataUser->limbah_padat_infeksius = $limbah_padat_infeksius;
 
                 // VALIDASI: Total limbah menggunakan berat_limbah_total dari database
-                // PENTING: Tidak menjumlahkan komponen lain untuk menghindari double counting
-                // karena berat_limbah_total sudah merupakan total keseluruhan limbah padat
                 $tmpData['total_limbah'] += $limbahB3Padat;
-                // dd($limbahB3Padat);
-                // dd($limbahNonCovid);
-                // dd($limbahCovid);
-                // dd($tmpData['total_limbah']);
-
                 $tmpData['total_limbah_b3'] += $limbahB3Padat;
                 $tmpData['total_limbah_noncovid'] += $limbahNonCovid;
                 $tmpData['total_limbah_covid'] += $limbahCovid;
@@ -258,6 +236,7 @@ class LaporanBulananController extends Controller
 
                 array_push($tmpData['users'], $dataUser);
             }
+            
             // total masing masing limbah pertahun
             $laporan_rekapitulasi['total_seluruh_limbah_b3'] += $tmpData['total_limbah_b3'];
             $laporan_rekapitulasi['total_seluruh_limbah_covid'] += $tmpData['total_limbah_covid'];
@@ -272,36 +251,25 @@ class LaporanBulananController extends Controller
             $laporan_rekapitulasi['total_seluruh_limbah'] += $tmpData['total_limbah'];
             array_push($laporan_rekapitulasi['laporan'], $tmpData);
         }
-        // dd($laporan_rekapitulasi);
 
-        // $laporanBulanan = MLaporanBulanan::where('statusactive_laporan_bulanan', '<>', 0);
-        // if ($form_level == '1') {
-        // } else {
-        //     $laporanBulanan = $laporanBulanan->where('id_user', $form_id_user);
-        // }
-        // // $laporanBulanan = $laporanBulanan->where(['periode' => $periode, 'tahun' => $tahun]);
-        // if ($periode) {
-        //     $laporanBulanan = $laporanBulanan->where('periode', $periode);
-        // }
-        // if ($tahun) {
-        //     $laporanBulanan = $laporanBulanan->where('tahun', $tahun);
-        // }
-
-        // $laporanBulanan = $laporanBulanan->orderBy('id_laporan_bulanan', 'DESC')->get();
-        // foreach ($laporanBulanan as $key => $v) {
-        //     $user = MUser::where(['id_user' => $v->id_user])->latest()->first();
-        //     $v->user = $user;
-        //     $laporanBulananB3Padat = MLaporanBulananB3Padat::where('id_laporan_bulanan', $v->id_laporan_bulanan)->get();
-        //     $v->b3padat = $laporanBulananB3Padat->toArray();
-
-        //     $laporanBulananFile = MLaporanBulananFile::where('id_laporan_bulanan', $v->id_laporan_bulanan)->get();
-        //     $v->file_manifest = $laporanBulananFile->where('tipe_file', 'manifest')->values()->toArray();
-        //     $v->file_logbook = $laporanBulananFile->where('tipe_file', 'logbook')->values()->toArray();
-        // };
         return MyRB::asSuccess(200)
             ->withMessage('Success get data.!')
             ->withData($laporan_rekapitulasi)
             ->build();
+    }
+
+    /**
+     * OPTIMIZATION: Helper method to safely extract float values from model
+     */
+    private function safeFloatValue($model, $field)
+    {
+        if (!$model) return 0;
+        
+        try {
+            return floatval($model->$field ?? '0') ?? 0;
+        } catch (Exception $ex) {
+            return 0;
+        }
     }
     function laporanProsesCreate(Request $request)
     {
@@ -380,7 +348,7 @@ class LaporanBulananController extends Controller
             // 'file_logbook' => 'required|max:10120',
             'link_input_manifest' => 'required',
             'link_input_logbook' => 'required',
-            'link_input_lab_ipal' => 'required',
+            // 'link_input_lab_ipal' => 'required',
             'link_input_lab_lain' => 'required',
             // 'link_input_dokumen_lingkungan_rs' => 'required',
             // 'link_input_swa_pantau' => 'required',
@@ -414,7 +382,7 @@ class LaporanBulananController extends Controller
         $form_ukuran_pemusnahan_sendiri = $request->ukuran_pemusnahan_sendiri;
         $form_limbah_b3_covid = $request->limbah_b3_covid ?? 0;
         $form_limbah_b3_noncovid = $request->limbah_b3_noncovid ?? 0;
-        $form_debit_limbah_cair = $request->debit_limbah_cair ?? 0;
+        $form_debit_limbah_cair = $request->limbah_cair_b3 ?? 0;
         $form_kapasitas_ipal = $request->kapasitas_ipal;
         $form_memenuhi_syarat = $request->memenuhi_syarat;
         $form_catatan = $request->catatan;
@@ -444,6 +412,7 @@ class LaporanBulananController extends Controller
         $form_limbah_jarum = $request->limbah_jarum ?? 0;
         $form_limbah_sludge_ipal = $request->limbah_sludge_ipal ?? 0;
         $form_limbah_padat_infeksius = $request->limbah_padat_infeksius ?? 0;
+        $form_debit_limbah_cair = $request->limbah_cair_b3 ?? 0;
 
         $laporanBulanan = MLaporanBulanan::where(['id_user' => $form_id_user, 'periode' => $form_periode, 'tahun' => $form_tahun, 'statusactive_laporan_bulanan' => 1])->get();
 
@@ -496,7 +465,7 @@ class LaporanBulananController extends Controller
         $laporan_bulanan->ukuran_pemusnahan_sendiri = $form_ukuran_pemusnahan_sendiri; // string
         $laporan_bulanan->limbah_b3_covid = $form_limbah_b3_covid; // string
         $laporan_bulanan->limbah_b3_noncovid = $form_limbah_b3_noncovid; // string
-        $laporan_bulanan->debit_limbah_cair = $form_debit_limbah_cair; // string
+        $laporan_bulanan->limbah_cair_b3 = $form_debit_limbah_cair; // string - menyimpan data limbah cair B3
         $laporan_bulanan->kapasitas_ipal = $form_kapasitas_ipal; // string
         $laporan_bulanan->memenuhi_syarat = $form_memenuhi_syarat; // integer
         $laporan_bulanan->catatan = $form_catatan; // string
@@ -624,7 +593,7 @@ class LaporanBulananController extends Controller
             // 'file_logbook' => 'required|max:10120',
             'link_input_manifest' => 'required',
             'link_input_logbook' => 'required',
-            'link_input_lab_ipal' => 'required',
+            // 'link_input_lab_ipal' => 'required',
             'link_input_lab_lain' => 'required',
             // 'link_input_dokumen_lingkungan_rs' => 'required',
             // 'link_input_swa_pantau' => 'required',
@@ -661,7 +630,7 @@ class LaporanBulananController extends Controller
         $form_ukuran_pemusnahan_sendiri = $request->ukuran_pemusnahan_sendiri;
         $form_limbah_b3_covid = $request->limbah_b3_covid ?? 0;
         $form_limbah_b3_noncovid = $request->limbah_b3_noncovid ?? 0;
-        $form_debit_limbah_cair = $request->debit_limbah_cair ?? 0;
+        $form_debit_limbah_cair = $request->limbah_cair_b3 ?? 0;
         $form_kapasitas_ipal = $request->kapasitas_ipal;
         $form_memenuhi_syarat = $request->memenuhi_syarat;
         $form_catatan = $request->catatan;
@@ -781,7 +750,7 @@ class LaporanBulananController extends Controller
         $laporan_bulanan->ukuran_pemusnahan_sendiri = $form_ukuran_pemusnahan_sendiri; // string
         $laporan_bulanan->limbah_b3_covid = $form_limbah_b3_covid; // string
         $laporan_bulanan->limbah_b3_noncovid = $form_limbah_b3_noncovid; // string
-        $laporan_bulanan->debit_limbah_cair = $form_debit_limbah_cair; // string
+        $laporan_bulanan->limbah_cair_b3 = $form_debit_limbah_cair; // string - menyimpan data limbah cair B3
         $laporan_bulanan->kapasitas_ipal = $form_kapasitas_ipal; // string
         $laporan_bulanan->memenuhi_syarat = $form_memenuhi_syarat; // integer
         $laporan_bulanan->catatan = $form_catatan; // string
