@@ -26,50 +26,85 @@ class TransporterController extends Controller
 {
     function mouProsesData(Request $request)
     {
-        // -- user payload -- \\
-        $user = MyUtils::getPayloadToken($request, true);
-        $form_id_user = $user->id_user ?? 0;
-        $form_level = $user->level ?? '3';
-        $form_username = $user->username ?? '';
-        $form_nama_user = $user->username ?? '';
-        $form_uid = $user->uid ?? '';
+        try {
+            // -- user payload -- \\
+            $user = MyUtils::getPayloadToken($request, true);
+            $form_id_user = $user->id_user ?? 0;
+            $form_level = $user->level ?? '3';
+            $form_username = $user->username ?? '';
+            $form_nama_user = $user->username ?? '';
+            $form_uid = $user->uid ?? '';
 
-        $transporter = MTransporter::where('statusactive_transporter', '<>', 0);
-        if ($form_level == '1') {
-        } else {
-            $transporter = $transporter->where('id_user', $form_id_user);
+            $transporter = MTransporter::leftJoin('tbl_user', function($join) {
+                    $join->on('tbl_transporter.id_user', '=', 'tbl_user.id_user');
+                })
+                ->where('tbl_transporter.statusactive_transporter', '<>', 0);
+            if ($form_level == '1') {
+            } else {
+                $transporter = $transporter->where('tbl_transporter.id_user', $form_id_user);
+            }
+            $transporter = $transporter->select(
+                'tbl_transporter.*',
+                'tbl_user.nama_user',
+                'tbl_user.tipe_tempat',
+                'tbl_user.nama_tempat',
+                'tbl_user.username as user_username',
+                'tbl_user.level as user_level'
+            )->get();
+            foreach ($transporter as $key => $v) {
+                // Create user object from joined data
+                $user = null;
+                if ($v->nama_user) {
+                    $user = (object) [
+                        'id_user' => $v->id_user,
+                        'nama_user' => $v->nama_user,
+                        'tipe_tempat' => $v->tipe_tempat,
+                        'nama_tempat' => $v->nama_tempat,
+                        'username' => $v->user_username,
+                        'level' => $v->user_level
+                    ];
+                }
+                $transporterMOU = MTransporterMOU::where('id_transporter', $v->id_transporter)->get();
+                $dateMOU = MTransporterMOU::where('id_transporter', $v->id_transporter)->orderBy('tgl_akhir', 'DESC')->latest()->first();
+                $tgl_now = Carbon::now();
+                $tgl_akhir = Carbon::now()->format('Y-m-d H:m:s');
+                $masa_berlaku_berakhir = 'belum';
+                if ($dateMOU != null) {
+                    $tgl_akhir = $dateMOU->tgl_akhir;
+                }
+                $masa_berlaku_berakhir_hariH = $tgl_now->gte(Carbon::parse($tgl_akhir));
+                $masa_berlaku_berakhir_1bulan = $tgl_now->gte(Carbon::parse($tgl_akhir)->subDay()->subMonth());
+                if ($masa_berlaku_berakhir_1bulan) {
+                    $masa_berlaku_berakhir = '1bulan';
+                }
+                if ($masa_berlaku_berakhir_hariH) {
+                    $masa_berlaku_berakhir = 'harih';
+                }
+                $v->masa_berlaku_sudah_berakhir = $masa_berlaku_berakhir;
+                $v->masa_berlaku_terakhir = $tgl_akhir;
+                $v->files = $transporterMOU->filter(function ($val) {
+                    return $val->tipe == 'MOU';
+                })->values()->toArray();
+                // $v->files = $transporterMOU->values()->toArray();
+                $v->user = $user;
+            }
+            // Return data with 'values' property to match frontend expectations
+            return response()->json([
+                'success' => true,
+                'code' => 200,
+                'message' => 'Success get data.!',
+                'data' => [
+                    'values' => $transporter->toArray()
+                ],
+                'timestamp' => time(),
+                'timezone' => new \DateTime()
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('TransporterController mouProsesData error: ' . $e->getMessage());
+            return MyRB::asError(500)
+                ->withMessage('Internal server error: ' . $e->getMessage())
+                ->build();
         }
-        $transporter = $transporter->get();
-        foreach ($transporter as $key => $v) {
-            $user = MUser::where(['id_user' => $v->id_user])->latest()->first();
-            $transporterMOU = MTransporterMOU::where('id_transporter', $v->id_transporter)->get();
-            $dateMOU = MTransporterMOU::where('id_transporter', $v->id_transporter)->orderBy('tgl_akhir', 'DESC')->latest()->first();
-            $tgl_now = Carbon::now();
-            $tgl_akhir = Carbon::now()->format('Y-m-d H:m:s');
-            $masa_berlaku_berakhir = 'belum';
-            if ($dateMOU != null) {
-                $tgl_akhir = $dateMOU->tgl_akhir;
-            }
-            $masa_berlaku_berakhir_hariH = $tgl_now->gte(Carbon::parse($tgl_akhir));
-            $masa_berlaku_berakhir_1bulan = $tgl_now->gte(Carbon::parse($tgl_akhir)->subDay()->subMonth());
-            if ($masa_berlaku_berakhir_1bulan) {
-                $masa_berlaku_berakhir = '1bulan';
-            }
-            if ($masa_berlaku_berakhir_hariH) {
-                $masa_berlaku_berakhir = 'harih';
-            }
-            $v->masa_berlaku_sudah_berakhir = $masa_berlaku_berakhir;
-            $v->masa_berlaku_terakhir = $tgl_akhir;
-            $v->files = $transporterMOU->filter(function ($val) {
-                return $val->tipe == 'MOU';
-            })->values()->toArray();
-            // $v->files = $transporterMOU->values()->toArray();
-            $v->user = $user;
-        }
-        return MyRB::asSuccess(200)
-            ->withMessage('Success get data.!')
-            ->withData($transporter->values()->toArray())
-            ->build();
     }
     function mouProsesDelete(Request $request)
     {

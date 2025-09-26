@@ -41,6 +41,12 @@ class CekLoginWebNext
                 ->withHttpCode(401)
                 ->build();
         }
+        
+        // Remove 'Bearer ' prefix if present
+        if (str_starts_with($token, 'Bearer ')) {
+            $token = substr($token, 7);
+        }
+        
         $cek = JWTAuth::setToken($token)->check();
         if (!$cek) {
             return

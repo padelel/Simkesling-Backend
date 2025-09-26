@@ -18,6 +18,12 @@ class MyUtils
             if ($token == null) {
                 return null;
             }
+            
+            // Remove 'Bearer ' prefix if present
+            if (strpos($token, 'Bearer ') === 0) {
+                $token = substr($token, 7);
+            }
+            
             $user = JWTAuth::setToken($token)->getPayload();
             if ($parse) {
                 return (object) $user->get();

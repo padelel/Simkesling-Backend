@@ -68,6 +68,11 @@ return [
 		|-----------------------------------------------------------------------------------------------------------
 		*/
 		'classes'    => [
+			\stdClass::class                                    => [
+			'handler' => \MarcinOrlowski\ResponseBuilder\Converters\ArrayableConverter::class,
+			'key'     => null,
+			'pri'     => 0,
+		],
 			\Illuminate\Database\Eloquent\Model::class          => [
 				'handler' => \MarcinOrlowski\ResponseBuilder\Converters\ToArrayConverter::class,
 				'key'     => 'item',
