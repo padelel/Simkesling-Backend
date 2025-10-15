@@ -6,23 +6,16 @@ return [
     |--------------------------------------------------------------------------
     | Cross-Origin Resource Sharing (CORS) Configuration
     |--------------------------------------------------------------------------
-    |
-    | Here you may configure your settings for cross-origin resource sharing
-    | or "CORS". This determines what cross-origin operations may execute
-    | in web browsers. You are free to adjust these settings as needed.
-    |
-    | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-    |
     */
 
-    // 'paths' => ['api/*', 'sanctum/csrf-cookie', '*', 'api'],
-    'paths' => ['*'],
+    'paths' => ['api/*'],
 
     'allowed_methods' => ['*'],
 
-    // 'allowed_origins' => ['*'],
+    // PERBAIKAN: Parse FRONTEND_URLS dari .env dengan benar
+    'allowed_origins' => array_filter(array_map('trim', explode(',', env('FRONTEND_URLS', '')))),
 
-    // 'allowed_origins_patterns' => ['*'],
+    'allowed_origins_patterns' => ['*'],
 
     'allowed_headers' => ['*'],
 
@@ -30,6 +23,7 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    // PENTING: Karena withCredentials: true di frontend
+    'supports_credentials' => true,
 
 ];

@@ -79,11 +79,27 @@ class LandingController extends Controller
         }
 
         $user = auth()->guard('webnext')->user();
-        return
-            MyRB::asSuccess(200)
+        // Ambil masa berlaku token dari konfigurasi (dalam menit). Default 60 jika tidak ada.
+        $ttl = config('jwt.ttl', 60);
+
+        // Buat respons sukses tanpa token di body
+        $successResponse = MyRB::asSuccess(200)
             ->withMessage('Sukses Login.!')
-            ->withData(['user' => $user, 'token' => $token])
+            ->withData(['user' => $user]) // Hanya kirim data user jika diperlukan frontend
             ->build();
+
+        // Tempelkan token sebagai HttpOnly cookie pada respons
+        return response($successResponse)->cookie(
+            'token',      // Nama cookie
+            $token,       // Nilai token
+            $ttl,         // Masa berlaku (menit)
+            '/',          // Path
+            null,         // Domain
+            true,         // Secure flag (hanya lewat HTTPS)
+            true,         // HttpOnly flag (tidak bisa diakses oleh JavaScript)
+            false,        // Raw
+            'Strict'      // SameSite attribute
+        );
     }
 
     function kecamatanProsesData(Request $request)
