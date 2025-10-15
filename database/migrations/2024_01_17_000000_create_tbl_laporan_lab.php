@@ -35,6 +35,13 @@ return new class extends Migration
             $table->text('hasil_uji')->nullable(); // JSON untuk hasil sesuai jenis pemeriksaan
             $table->string('metode_analisis', 100)->nullable();
             
+            // Specific columns for each examination type
+            $table->text('kualitas_udara')->nullable(); // JSON data untuk pemeriksaan kualitas udara
+            $table->text('kualitas_air')->nullable(); // JSON data untuk pemeriksaan kualitas air
+            $table->text('kualitas_makanan')->nullable(); // JSON data untuk pemeriksaan kualitas makanan
+            $table->text('usap_alat_medis')->nullable(); // JSON data untuk pemeriksaan usap alat medis
+            $table->text('limbah_cair')->nullable(); // JSON data untuk pemeriksaan limbah cair
+            
             // Additional Info
             $table->text('catatan')->nullable();
             

@@ -50,11 +50,13 @@ Route::group(['prefix' => 'v1'], function () {
     Route::group(['prefix' => 'user', 'middleware' => 'ceklogin.webnext'], function () {
         // -- dashboard
         Route::post('/dashboard-user/data', [LandingController::class, 'dasboardUserProsesData'])->name('api.v1.user.dashboard.user.data');
+        Route::post('/dashboard-user/data-lab', [LandingController::class, 'dashboardUserLabData'])->name('api.v1.user.dashboard.user.data-lab');
         Route::post('/dashboard-admin/data', [LandingController::class, 'dasboardAdminProsesData'])->name('api.v1.user.dashboard.admin.data');
         
         // -- dashboard limbah (separated controllers)
         Route::post('/dashboard-admin/limbah-padat/data', [DashboardLimbahPadatController::class, 'dashboardLimbahPadatData'])->name('api.v1.user.dashboard.admin.limbah.padat.data');
         Route::post('/dashboard-admin/limbah-cair/data', [DashboardLimbahCairController::class, 'dashboardLimbahCairData'])->name('api.v1.user.dashboard.admin.limbah.cair.data');
+        Route::post('/dashboard-admin/laporan-lab/data', [LandingController::class, 'dashboardAdminLaporanLabData'])->name('api.v1.user.dashboard.admin.laporan.lab.data');
 
         // -- kecamatan kelurahan
         Route::post('/kecamatan/data', [LandingController::class, 'kecamatanProsesData'])->name('api.v1.user.kecamatan.data');
@@ -96,6 +98,7 @@ Route::group(['prefix' => 'v1'], function () {
         Route::post('/laporan-lab/data', [LaporanLabController::class, 'laporanLabProsesData'])->name('api.v1.user.laporan-lab.data');
         Route::post('/laporan-lab/create', [LaporanLabController::class, 'laporanLabProsesCreate'])->name('api.v1.user.laporan-lab.create');
         Route::post('/laporan-lab/simple-create', [LaporanLabController::class, 'laporanLabSimpleStore'])->name('api.v1.user.laporan-lab.simple-create');
+        Route::post('/laporan-lab/simple-update', [LaporanLabController::class, 'laporanLabSimpleUpdate'])->name('api.v1.user.laporan-lab.simple-update');
         Route::post('/laporan-lab/update', [LaporanLabController::class, 'laporanLabProsesUpdate'])->name('api.v1.user.laporan-lab.update');
         Route::post('/laporan-lab/delete', [LaporanLabController::class, 'laporanLabProsesDelete'])->name('api.v1.user.laporan-lab.delete');
         Route::post('/laporan-lab/show', [LaporanLabController::class, 'laporanLabProsesShow'])->name('api.v1.user.laporan-lab.show');

@@ -53,6 +53,7 @@ class MUser extends Authenticatable implements JWTSubject
     {
         return [
             'id_user' => $this->id_user,
+            'username' => $this->username,
             'nama_user' => $this->nama_user,
             'level' => $this->level,
             'noreg_tempat' => $this->noreg_tempat,
@@ -65,6 +66,7 @@ class MUser extends Authenticatable implements JWTSubject
             'nohp' => $this->nohp,
             'email' => $this->email,
             'link' => $this->link,
+            'uid' => $this->uid,
         ];
     }
 

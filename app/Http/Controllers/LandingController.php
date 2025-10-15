@@ -6,6 +6,7 @@ use App\Models\MKecamatan;
 use App\Models\MKelurahan;
 use App\Models\MLaporanBulanan;
 use App\Models\MLaporanBulananB3Padat;
+use App\Models\MLaporanLab;
 use App\Models\MLimbahCair;
 use App\Models\MTransporter;
 use App\Models\MUser;
@@ -437,5 +438,259 @@ class LandingController extends Controller
         // dd($laporan_periode_now->get());
         // dd($user_puskesmas_rs);
         // dd($belum_lapor);
+    }
+
+    function dashboardUserLabData(Request $request)
+    {
+        // -- user payload -- \\
+        $user = MyUtils::getPayloadToken($request, true);
+        $form_id_user = $user->id_user ?? 0;
+        $form_level = $user->level ?? '3';
+        $form_username = $user->username ?? '';
+        $form_nama_user = $user->nama_user ?? '';
+        $form_uid = $user->uid ?? '';
+
+        // -- form input -- \\
+        $form_tahun = (($request->tahun == null) ? null : intval($request->tahun)) ?? intval(date('Y'));
+        $form_periode = (($request->periode == null) ? null : intval($request->periode)) ?? intval(date('m'));
+
+        $tahun = ($form_tahun == 0 || $form_tahun == '0') ? intval(date('Y')) : $form_tahun;
+        $periode = ($form_periode == 0 || $form_periode == '0') ? intval(date('m')) : $form_periode;
+        $periode_nama = Carbon::create()->day(1)->month($periode)->format('F');
+        
+        $laporan = [
+            'laporan_periode' => $periode,
+            'laporan_periode_nama' => $periode_nama,
+            'laporan_periode_tahun' => $tahun,
+            'sudah_lapor' => false,
+            'total_lab_chart_year' => [],
+            'bulan_nama' => [],
+            'bulan_sudah_lapor' => [] // Array untuk menandai bulan mana saja yang sudah ada laporan
+        ];
+
+        // Check if user has reported for current period
+        $laporan_lab = MLaporanLab::where('statusactive_laporan_lab', '<>', 0)->where('id_user', $form_id_user);
+        $laporan_lab_periode_now = $laporan_lab->where(['periode' => $periode, 'tahun' => $tahun])->get();
+        if (count($laporan_lab_periode_now) > 0) {
+            $laporan['sudah_lapor'] = true;
+        }
+
+        // Get all lab reports for the year to build chart data
+        $total_lab_chart_year = MLaporanLab::where('statusactive_laporan_lab', '<>', 0)
+            ->where('id_user', $form_id_user)
+            ->where('tahun', $tahun)
+            ->get();
+
+        $arr_total_pemeriksaan = [];
+        $arr_bulan_sudah_lapor = [];
+        
+        for ($i = 1; $i <= 12; $i++) {
+            $bulan_nama = Carbon::create()->day(1)->month($i)->format('F');
+            $laporan_bulan = $total_lab_chart_year->where('periode', $i);
+            
+            $val_total_pemeriksaan = 0;
+            $sudah_lapor_bulan = false;
+            
+            if ($laporan_bulan->count() > 0) {
+                $sudah_lapor_bulan = true;
+                // Sum all examinations for this month
+                foreach ($laporan_bulan as $lab_report) {
+                    try {
+                        $val_total_pemeriksaan += intval($lab_report->total_pemeriksaan ?? 0);
+                    } catch (Exception $ex) {
+                        // Handle exception if needed
+                    }
+                }
+            }
+            
+            array_push($arr_total_pemeriksaan, $val_total_pemeriksaan);
+            array_push($arr_bulan_sudah_lapor, $sudah_lapor_bulan);
+            array_push($laporan['bulan_nama'], $bulan_nama);
+        }
+
+        // Format data for ApexCharts
+        $arr_jsn = [
+            ['name' => 'Total Pemeriksaan Lab', 'data' => $arr_total_pemeriksaan]
+        ];
+        
+        $laporan['total_lab_chart_year'] = $arr_jsn;
+        $laporan['bulan_sudah_lapor'] = $arr_bulan_sudah_lapor;
+
+        return MyRB::asSuccess(200)
+            ->withMessage('Success get lab dashboard data!')
+            ->withData(['values' => $laporan])
+            ->build();
+    }
+
+    function dashboardAdminLaporanLabData(Request $request)
+    {
+        // -- user payload -- \\
+        $user = MyUtils::getPayloadToken($request, true);
+        $form_id_user = $user->id_user ?? 0;
+        $form_level = $user->level ?? '3';
+        $form_username = $user->username ?? '';
+        $form_nama_user = $user->nama_user ?? '';
+        $form_uid = $user->uid ?? '';
+
+        // -- form input -- \\
+        $form_tahun = (($request->tahun == null) ? null : intval($request->tahun)) ?? intval(date('Y'));
+
+        $tahun = ($form_tahun == 0 || $form_tahun == '0') ? intval(date('Y')) : $form_tahun;
+        
+        $laporan = [
+            'laporan_periode_tahun' => $tahun,
+        ];
+
+        // Get all lab reports for the year
+        $laporan_lab_query = MLaporanLab::where('statusactive_laporan_lab', '<>', 0)->where('tahun', $tahun);
+        $total_laporan_perperiode = $laporan_lab_query->count();
+        
+        // Get users who have reported
+        $user_laporan = $laporan_lab_query->pluck('id_user')->unique();
+        
+        // Get all users (excluding admin level 1)
+        $user_puskesmas_rs = MUser::where(['statusactive_user' => 1])->where('level', '<>', '1')->get();
+        $total_puskesmas_rs = $user_puskesmas_rs->count();
+        
+        // Calculate who has and hasn't reported
+        $user_sudah_lapor = $user_puskesmas_rs->whereIn('id_user', $user_laporan);
+        $user_belum_lapor = $user_puskesmas_rs->whereNotIn('id_user', $user_laporan);
+        
+        $total_puskesmas_rs_sudah_lapor = $user_sudah_lapor->count();
+        $total_puskesmas_rs_belum_lapor = $user_belum_lapor->count();
+
+        // Separate by user level
+        $tmp_user_rs = MUser::where(['statusactive_user' => 1])->where('level', '=', '2')->pluck('id_user');
+        $tmp_user_puskesmas = MUser::where(['statusactive_user' => 1])->where('level', '=', '3')->pluck('id_user');
+
+        $user_rs_sudah_lapor = $user_sudah_lapor->whereIn('id_user', $tmp_user_rs)->count();
+        $user_rs_belum_lapor = MUser::where(['statusactive_user' => 1])->where('level', '=', '2')->whereNotIn('id_user', $user_laporan)->count();
+
+        $user_puskesmas_sudah_lapor = $user_sudah_lapor->whereIn('id_user', $tmp_user_puskesmas)->count();
+        $user_puskesmas_belum_lapor = MUser::where(['statusactive_user' => 1])->where('level', '=', '3')->whereNotIn('id_user', $user_laporan)->count();
+
+        $total_rs = MUser::where(['statusactive_user' => 1])->where('level', '=', '2')->count();
+        $total_puskesmas = MUser::where(['statusactive_user' => 1])->where('level', '=', '3')->count();
+
+        // Add reporting status to ALL users (both reported and not reported)
+        $tmp_all_users = [];
+        foreach ($user_puskesmas_rs as $value) {
+            // Get months that have been reported for this user
+            $reported_months = MLaporanLab::where('statusactive_laporan_lab', '<>', 0)
+                ->where('id_user', $value->id_user)
+                ->where('tahun', $tahun)
+                ->pluck('periode')
+                ->toArray();
+            
+            $all_months = range(1, 12);
+            $unreported_months = array_diff($all_months, $reported_months);
+            
+            // Set reporting status
+            $value->sudah_lapor = in_array($value->id_user, $user_laporan->toArray());
+            $value->reported_months_lab = $reported_months;
+            $value->missing_months_lab = array_values($unreported_months);
+            
+            // Add month names for display
+            $reported_month_names = [];
+            foreach ($reported_months as $month) {
+                $reported_month_names[] = Carbon::create()->day(1)->month($month)->format('F');
+            }
+            $value->bulan_sudah_lapor = implode(', ', $reported_month_names);
+            
+            $unreported_month_names = [];
+            foreach ($unreported_months as $month) {
+                $unreported_month_names[] = Carbon::create()->day(1)->month($month)->format('F');
+            }
+            $value->bulan_belum_lapor = implode(', ', $unreported_month_names);
+            
+            // Add user type based on level
+            $value->tipe_tempat = ($value->level == '2') ? 'Rumah Sakit' : 'Puskesmas';
+            $value->nama_lab = $value->nama_user;
+            $value->jenis_lab = $value->tipe_tempat;
+            
+            $tmp_all_users[] = $value;
+        }
+
+        // Chart data for 12 months
+        $total_chart_puskesmas_rs = [];
+        $total_chart_puskesmas_rs_belum_lapor = [];
+        $total_chart_puskesmas_rs_sudah_lapor = [];
+        $total_chart_rs = [];
+        $total_chart_rs_sudah_lapor = [];
+        $total_chart_rs_belum_lapor = [];
+        $total_chart_puskesmas = [];
+        $total_chart_puskesmas_sudah_lapor = [];
+        $total_chart_puskesmas_belum_lapor = [];
+
+        for ($i = 1; $i <= 12; $i++) {
+            $tmp_user_laporan = MLaporanLab::where('statusactive_laporan_lab', '<>', 0)
+                ->where(['periode' => $i, 'tahun' => $tahun])
+                ->pluck('id_user')
+                ->unique();
+            
+            $user_puskesmas_rs_sudah_lapor_bulan = $tmp_user_laporan->count();
+            $user_puskesmas_rs_belum_lapor_bulan = $total_puskesmas_rs - $user_puskesmas_rs_sudah_lapor_bulan;
+
+            $user_rs_sudah_lapor_bulan = MLaporanLab::where('statusactive_laporan_lab', '<>', 0)
+                ->where(['periode' => $i, 'tahun' => $tahun])
+                ->whereIn('id_user', $tmp_user_rs)
+                ->pluck('id_user')
+                ->unique()
+                ->count();
+            $user_rs_belum_lapor_bulan = $total_rs - $user_rs_sudah_lapor_bulan;
+
+            $user_puskesmas_sudah_lapor_bulan = MLaporanLab::where('statusactive_laporan_lab', '<>', 0)
+                ->where(['periode' => $i, 'tahun' => $tahun])
+                ->whereIn('id_user', $tmp_user_puskesmas)
+                ->pluck('id_user')
+                ->unique()
+                ->count();
+            $user_puskesmas_belum_lapor_bulan = $total_puskesmas - $user_puskesmas_sudah_lapor_bulan;
+
+            array_push($total_chart_puskesmas_rs, $total_puskesmas_rs);
+            array_push($total_chart_puskesmas_rs_belum_lapor, $user_puskesmas_rs_belum_lapor_bulan);
+            array_push($total_chart_puskesmas_rs_sudah_lapor, $user_puskesmas_rs_sudah_lapor_bulan);
+
+            array_push($total_chart_rs, $total_rs);
+            array_push($total_chart_rs_sudah_lapor, $user_rs_sudah_lapor_bulan);
+            array_push($total_chart_rs_belum_lapor, $user_rs_belum_lapor_bulan);
+
+            array_push($total_chart_puskesmas, $total_puskesmas);
+            array_push($total_chart_puskesmas_sudah_lapor, $user_puskesmas_sudah_lapor_bulan);
+            array_push($total_chart_puskesmas_belum_lapor, $user_puskesmas_belum_lapor_bulan);
+        }
+
+        // Pie chart data
+        $total_chart_pie_rs = [$total_rs, $user_rs_belum_lapor, $user_rs_sudah_lapor];
+        $total_chart_pie_puskesmas = [$total_puskesmas, $user_puskesmas_belum_lapor, $user_puskesmas_sudah_lapor];
+        $total_chart_pie_label_rs = ['Total Rumah Sakit', 'Total Rumah Sakit Belum Lapor', 'Total Rumah Sakit Sudah Lapor'];
+        $total_chart_pie_label_puskesmas = ['Total Puskesmas', 'Total Puskesmas Belum Lapor', 'Total Puskesmas Sudah Lapor'];
+
+        // Build response data
+        $laporan['total_laporan_perperiode'] = $total_laporan_perperiode;
+        $laporan['total_puskesmas_rs_belum_lapor'] = $total_puskesmas_rs_belum_lapor;
+        $laporan['total_puskesmas_rs_sudah_lapor'] = $total_puskesmas_rs_sudah_lapor;
+        $laporan['total_puskesmas_rs'] = $total_puskesmas_rs;
+        $laporan['total_rs'] = $total_rs;
+        $laporan['total_puskesmas'] = $total_puskesmas;
+        $laporan['total_chart_puskesmas_rs'] = $total_chart_puskesmas_rs;
+        $laporan['total_chart_puskesmas_rs_belum_lapor'] = $total_chart_puskesmas_rs_belum_lapor;
+        $laporan['total_chart_puskesmas_rs_sudah_lapor'] = $total_chart_puskesmas_rs_sudah_lapor;
+        $laporan['total_chart_rs'] = $total_chart_rs;
+        $laporan['total_chart_rs_sudah_lapor'] = $total_chart_rs_sudah_lapor;
+        $laporan['total_chart_rs_belum_lapor'] = $total_chart_rs_belum_lapor;
+        $laporan['total_chart_puskesmas'] = $total_chart_puskesmas;
+        $laporan['total_chart_puskesmas_sudah_lapor'] = $total_chart_puskesmas_sudah_lapor;
+        $laporan['total_chart_puskesmas_belum_lapor'] = $total_chart_puskesmas_belum_lapor;
+        $laporan['total_chart_pie_rs'] = $total_chart_pie_rs;
+        $laporan['total_chart_pie_puskesmas'] = $total_chart_pie_puskesmas;
+        $laporan['total_chart_pie_label_rs'] = $total_chart_pie_label_rs;
+        $laporan['total_chart_pie_label_puskesmas'] = $total_chart_pie_label_puskesmas;
+        $laporan['notif_user_laporan_bulanan'] = $tmp_all_users;
+
+        return MyRB::asSuccess(200)
+            ->withMessage('Success get laporan lab dashboard data!')
+            ->withData(['values' => $laporan])
+            ->build();
     }
 }

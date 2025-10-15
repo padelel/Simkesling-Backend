@@ -66,7 +66,101 @@ class LaporanLabController extends Controller
 
         return MyRB::asSuccess(200)
             ->withMessage('Success get data laporan lab.!')
-            ->withData($laporanLab->values()->toArray())
+            ->withData([
+                'data' => $laporanLab->values()->toArray()
+            ])
+            ->build();
+    }
+
+    /**
+     * Update laporan lab - Simple Form
+     */
+    function laporanLabSimpleUpdate(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'oldid' => 'required|integer',
+            'kualitas_udara' => 'required|string',
+            'kualitas_air' => 'required|string',
+            'kualitas_makanan' => 'required|string',
+            'usap_alat_medis' => 'required|string',
+            'limbah_cair' => 'required|string',
+            'catatan' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return MyRB::asError(400)
+                ->withMessage('Form tidak sesuai.!')
+                ->withData($validator->errors()->toArray())
+                ->build();
+        }
+
+        // -- user payload -- \\
+        $user = MyUtils::getPayloadToken($request, true);
+        $form_id_user = $user->id_user ?? 0;
+        $form_username = $user->username ?? '';
+        $form_nama_user = $user->username ?? '';
+        $form_uid = $user->uid ?? 'xxx-xxxx-xxx';
+
+        // Find existing report
+        $laporanLab = MLaporanLab::find($request->oldid);
+        if (!$laporanLab) {
+            return MyRB::asError(404)
+                ->withHttpCode(404)
+                ->withMessage('Data laporan lab tidak ditemukan.!')
+                ->withData(null)
+                ->build();
+        }
+
+        // Check ownership (non-admin users can only edit their own reports)
+        if ($user->level != '1' && $laporanLab->id_user != $form_id_user) {
+            return MyRB::asError(403)
+                ->withHttpCode(403)
+                ->withMessage('Anda tidak memiliki akses untuk mengubah data ini.!')
+                ->withData(null)
+                ->build();
+        }
+
+        // -- form payload -- \\
+        $form_kualitas_udara = $request->kualitas_udara;
+        $form_kualitas_air = $request->kualitas_air;
+        $form_kualitas_makanan = $request->kualitas_makanan;
+        $form_usap_alat_medis = $request->usap_alat_medis;
+        $form_limbah_cair = $request->limbah_cair;
+        $form_catatan = $request->catatan;
+        $form_catatan = $request->catatan;
+        
+        // Get period and year from user input instead of current time
+        $form_periode_nama = $request->periode; // User selected period name (e.g., "Januari", "Triwulan 1")
+        $form_tahun = $request->tahun; // User selected year
+        
+        // Convert period name to month number for database storage
+        $monthMapping = [
+            'Januari' => 1, 'Februari' => 2, 'Maret' => 3, 'April' => 4,
+            'Mei' => 5, 'Juni' => 6, 'Juli' => 7, 'Agustus' => 8,
+            'September' => 9, 'Oktober' => 10, 'November' => 11, 'Desember' => 12,
+            'Triwulan 1' => 3, 'Triwulan 2' => 6, 'Triwulan 3' => 9, 'Triwulan 4' => 12,
+            'Semester 1' => 6, 'Semester 2' => 12, 'Tahunan' => 12
+        ];
+        $form_periode = $monthMapping[$form_periode_nama] ?? 1;
+
+        // Update the report with simplified data
+        $laporanLab->kualitas_udara = $form_kualitas_udara;
+        $laporanLab->kualitas_air = $form_kualitas_air;
+        $laporanLab->kualitas_makanan = $form_kualitas_makanan;
+        $laporanLab->usap_alat_medis = $form_usap_alat_medis;
+        $laporanLab->limbah_cair = $form_limbah_cair;
+        $laporanLab->catatan = $form_catatan;
+        
+        $laporanLab->periode = $form_periode;
+        $laporanLab->periode_nama = $form_periode_nama;
+        $laporanLab->tahun = $form_tahun;
+        $laporanLab->user_updated = $form_username;
+        $laporanLab->save();
+
+        return MyRB::asSuccess(200)
+            ->withHttpCode(200)
+            ->withData(null)
+            ->withMessage("Sukses mengupdate laporan lab untuk periode '" . $form_periode_nama . " " . $form_tahun . "' .!")
             ->build();
     }
 
@@ -79,8 +173,9 @@ class LaporanLabController extends Controller
             'kualitas_udara' => 'required|string',
             'kualitas_air' => 'required|string',
             'kualitas_makanan' => 'required|string',
-            'usap_alat_medis_linen' => 'required|string',
+            'usap_alat_medis' => 'required|string',
             'limbah_cair' => 'required|string',
+            'catatan' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -101,13 +196,23 @@ class LaporanLabController extends Controller
         $form_kualitas_udara = $request->kualitas_udara;
         $form_kualitas_air = $request->kualitas_air;
         $form_kualitas_makanan = $request->kualitas_makanan;
-        $form_usap_alat_medis_linen = $request->usap_alat_medis_linen;
+        $form_usap_alat_medis = $request->usap_alat_medis;
         $form_limbah_cair = $request->limbah_cair;
+        $form_catatan = $request->catatan;
         
-        $current_date = Carbon::now();
-        $form_periode = $current_date->month;
-        $form_periode_nama = $current_date->locale('id')->monthName;
-        $form_tahun = $current_date->year;
+        // Get period and year from user input instead of current time
+        $form_periode_nama = $request->periode; // User selected period name (e.g., "Januari", "Triwulan 1")
+        $form_tahun = $request->tahun; // User selected year
+        
+        // Convert period name to month number for database storage
+        $monthMapping = [
+            'Januari' => 1, 'Februari' => 2, 'Maret' => 3, 'April' => 4,
+            'Mei' => 5, 'Juni' => 6, 'Juli' => 7, 'Agustus' => 8,
+            'September' => 9, 'Oktober' => 10, 'November' => 11, 'Desember' => 12,
+            'Triwulan 1' => 3, 'Triwulan 2' => 6, 'Triwulan 3' => 9, 'Triwulan 4' => 12,
+            'Semester 1' => 6, 'Semester 2' => 12, 'Tahunan' => 12
+        ];
+        $form_periode = $monthMapping[$form_periode_nama] ?? 1;
 
         // Check if report already exists for this period
         $existingReport = MLaporanLab::where([
@@ -125,34 +230,21 @@ class LaporanLabController extends Controller
                 ->build();
         }
 
-        // Create new laporan lab with combined data
+        // Create new laporan lab with simplified data
         $laporanLab = new MLaporanLab();
         $laporanLab->id_user = $form_id_user;
-        $laporanLab->nama_lab = 'Laporan Lab Gabungan';
-        $laporanLab->jenis_pemeriksaan = 'gabungan';
-        $laporanLab->total_pemeriksaan = 5;
         
-        // Combine all examination results into structured data
-        $combined_results = [
-            'kualitas_udara' => $form_kualitas_udara,
-            'kualitas_air' => $form_kualitas_air,
-            'kualitas_makanan' => $form_kualitas_makanan,
-            'usap_alat_medis_linen' => $form_usap_alat_medis_linen,
-            'limbah_cair' => $form_limbah_cair
-        ];
+        // Save data to individual columns only
+        $laporanLab->kualitas_udara = $form_kualitas_udara;
+        $laporanLab->kualitas_air = $form_kualitas_air;
+        $laporanLab->kualitas_makanan = $form_kualitas_makanan;
+        $laporanLab->usap_alat_medis = $form_usap_alat_medis;
+        $laporanLab->limbah_cair = $form_limbah_cair;
+        $laporanLab->catatan = $form_catatan;
         
-        $laporanLab->parameter_uji = json_encode($combined_results);
-        $laporanLab->hasil_uji = json_encode($combined_results);
-        $laporanLab->metode_analisis = 'Pemeriksaan Gabungan 5 Jenis';
-        $laporanLab->catatan = 'Laporan lab gabungan dari form sederhana';
-        $laporanLab->link_sertifikat_lab = null;
-        $laporanLab->link_hasil_uji = null;
-        $laporanLab->link_dokumen_pendukung = null;
         $laporanLab->periode = $form_periode;
         $laporanLab->periode_nama = $form_periode_nama;
         $laporanLab->tahun = $form_tahun;
-        $laporanLab->status_laporan_lab = 1;
-        $laporanLab->statusactive_laporan_lab = 1;
         $laporanLab->user_created = $form_username;
         $laporanLab->save();
 
@@ -169,16 +261,16 @@ class LaporanLabController extends Controller
     function laporanLabProsesStore(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nama_lab' => 'required|string|max:100',
-            'jenis_pemeriksaan' => 'required|in:kualitas_udara,kualitas_air,kualitas_makanan,usap_alat_medis_linen,limbah_cair',
-            'total_pemeriksaan' => 'required|integer|min:0',
-            'parameter_uji' => 'required|string',
-            'hasil_uji' => 'required|string',
-            'metode_analisis' => 'required|string|max:100',
+            // 'nama_lab' => 'required|string|max:100',
+            // 'jenis_pemeriksaan' => 'required|in:kualitas_udara,kualitas_air,kualitas_makanan,usap_alat_medis,limbah_cair',
+            // 'total_pemeriksaan' => 'required|integer|min:0',
+            // 'parameter_uji' => 'required|string',
+            // 'hasil_uji' => 'required|string',
+            // 'metode_analisis' => 'required|string|max:100',
             'catatan' => 'nullable|string',
-            'link_sertifikat_lab' => 'nullable|string',
-            'link_hasil_uji' => 'nullable|string',
-            'link_dokumen_pendukung' => 'nullable|string',
+            // 'link_sertifikat_lab' => 'nullable|string',
+            // 'link_hasil_uji' => 'nullable|string',
+            // 'link_dokumen_pendukung' => 'nullable|string',
             'periode' => 'required|integer|min:1|max:12',
             'tahun' => 'required|integer|min:2020|max:2050',
         ]);
@@ -198,16 +290,16 @@ class LaporanLabController extends Controller
         $form_uid = $user->uid ?? 'xxx-xxxx-xxx';
 
         // -- form payload -- \\
-        $form_nama_lab = $request->nama_lab;
-        $form_jenis_pemeriksaan = $request->jenis_pemeriksaan;
-        $form_total_pemeriksaan = $request->total_pemeriksaan;
-        $form_parameter_uji = $request->parameter_uji;
-        $form_hasil_uji = $request->hasil_uji;
-        $form_metode_analisis = $request->metode_analisis;
+        // $form_nama_lab = $request->nama_lab;
+        // $form_jenis_pemeriksaan = $request->jenis_pemeriksaan;
+        // $form_total_pemeriksaan = $request->total_pemeriksaan;
+        // $form_parameter_uji = $request->parameter_uji;
+        // $form_hasil_uji = $request->hasil_uji;
+        // $form_metode_analisis = $request->metode_analisis;
         $form_catatan = $request->catatan;
-        $form_link_sertifikat_lab = $request->link_sertifikat_lab;
-        $form_link_hasil_uji = $request->link_hasil_uji;
-        $form_link_dokumen_pendukung = $request->link_dokumen_pendukung;
+        // $form_link_sertifikat_lab = $request->link_sertifikat_lab;
+        // $form_link_hasil_uji = $request->link_hasil_uji;
+        // $form_link_dokumen_pendukung = $request->link_dokumen_pendukung;
         $form_periode = $request->periode;
         $form_periode_nama = Carbon::create()->day(1)->month($form_periode)->locale('id')->monthName;
         $form_tahun = $request->tahun;
@@ -235,16 +327,16 @@ class LaporanLabController extends Controller
         // Create new laporan lab
         $laporanLab = new MLaporanLab();
         $laporanLab->id_user = $form_id_user;
-        $laporanLab->nama_lab = $form_nama_lab;
-        $laporanLab->jenis_pemeriksaan = $form_jenis_pemeriksaan;
-        $laporanLab->total_pemeriksaan = $form_total_pemeriksaan;
-        $laporanLab->parameter_uji = $form_parameter_uji;
-        $laporanLab->hasil_uji = $form_hasil_uji;
-        $laporanLab->metode_analisis = $form_metode_analisis;
+        // $laporanLab->nama_lab = $form_nama_lab;
+        // $laporanLab->jenis_pemeriksaan = $form_jenis_pemeriksaan;
+        // $laporanLab->total_pemeriksaan = $form_total_pemeriksaan;
+        // $laporanLab->parameter_uji = $form_parameter_uji;
+        // $laporanLab->hasil_uji = $form_hasil_uji;
+        // $laporanLab->metode_analisis = $form_metode_analisis;
         $laporanLab->catatan = $form_catatan;
-        $laporanLab->link_sertifikat_lab = $form_link_sertifikat_lab;
-        $laporanLab->link_hasil_uji = $form_link_hasil_uji;
-        $laporanLab->link_dokumen_pendukung = $form_link_dokumen_pendukung;
+        // $laporanLab->link_sertifikat_lab = $form_link_sertifikat_lab;
+        // $laporanLab->link_hasil_uji = $form_link_hasil_uji;
+        // $laporanLab->link_dokumen_pendukung = $form_link_dokumen_pendukung;
         $laporanLab->periode = $form_periode;
         $laporanLab->periode_nama = $form_periode_nama;
         $laporanLab->tahun = $form_tahun;
@@ -267,16 +359,16 @@ class LaporanLabController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'oldid' => 'required|integer',
-            'nama_lab' => 'required|string|max:100',
-            'jenis_pemeriksaan' => 'required|string|max:100',
-            'total_pemeriksaan' => 'required|integer|min:0',
-            'parameter_uji' => 'required|string',
-            'hasil_uji' => 'required|string',
-            'metode_analisis' => 'required|string|max:100',
+            // 'nama_lab' => 'required|string|max:100',
+            // 'jenis_pemeriksaan' => 'required|string|max:100',
+            // 'total_pemeriksaan' => 'required|integer|min:0',
+            // 'parameter_uji' => 'required|string',
+            // 'hasil_uji' => 'required|string',
+            // 'metode_analisis' => 'required|string|max:100',
             'catatan' => 'nullable|string',
-            'link_sertifikat_lab' => 'nullable|string',
-            'link_hasil_uji' => 'nullable|string',
-            'link_dokumen_pendukung' => 'nullable|string',
+            // 'link_sertifikat_lab' => 'nullable|string',
+            // 'link_hasil_uji' => 'nullable|string',
+            // 'link_dokumen_pendukung' => 'nullable|string',
             'periode' => 'required|integer|min:1|max:12',
             'tahun' => 'required|integer|min:2020|max:2050',
         ]);
@@ -315,31 +407,31 @@ class LaporanLabController extends Controller
         }
 
         // -- form payload -- \\
-        $form_nama_lab = $request->nama_lab;
-        $form_jenis_pemeriksaan = $request->jenis_pemeriksaan;
-        $form_total_pemeriksaan = $request->total_pemeriksaan;
-        $form_parameter_uji = $request->parameter_uji;
-        $form_hasil_uji = $request->hasil_uji;
-        $form_metode_analisis = $request->metode_analisis;
+        // $form_nama_lab = $request->nama_lab;
+        // $form_jenis_pemeriksaan = $request->jenis_pemeriksaan;
+        // $form_total_pemeriksaan = $request->total_pemeriksaan;
+        // $form_parameter_uji = $request->parameter_uji;
+        // $form_hasil_uji = $request->hasil_uji;
+        // $form_metode_analisis = $request->metode_analisis;
         $form_catatan = $request->catatan;
-        $form_link_sertifikat_lab = $request->link_sertifikat_lab;
-        $form_link_hasil_uji = $request->link_hasil_uji;
-        $form_link_dokumen_pendukung = $request->link_dokumen_pendukung;
+        // $form_link_sertifikat_lab = $request->link_sertifikat_lab;
+        // $form_link_hasil_uji = $request->link_hasil_uji;
+        // $form_link_dokumen_pendukung = $request->link_dokumen_pendukung;
         $form_periode = $request->periode;
         $form_periode_nama = Carbon::create()->day(1)->month($form_periode)->locale('id')->monthName;
         $form_tahun = $request->tahun;
 
         // Update the report
-        $laporanLab->nama_lab = $form_nama_lab;
-        $laporanLab->jenis_pemeriksaan = $form_jenis_pemeriksaan;
-        $laporanLab->total_pemeriksaan = $form_total_pemeriksaan;
-        $laporanLab->parameter_uji = $form_parameter_uji;
-        $laporanLab->hasil_uji = $form_hasil_uji;
-        $laporanLab->metode_analisis = $form_metode_analisis;
+        // $laporanLab->nama_lab = $form_nama_lab;
+        // $laporanLab->jenis_pemeriksaan = $form_jenis_pemeriksaan;
+        // $laporanLab->total_pemeriksaan = $form_total_pemeriksaan;
+        // $laporanLab->parameter_uji = $form_parameter_uji;
+        // $laporanLab->hasil_uji = $form_hasil_uji;
+        // $laporanLab->metode_analisis = $form_metode_analisis;
         $laporanLab->catatan = $form_catatan;
-        $laporanLab->link_sertifikat_lab = $form_link_sertifikat_lab;
-        $laporanLab->link_hasil_uji = $form_link_hasil_uji;
-        $laporanLab->link_dokumen_pendukung = $form_link_dokumen_pendukung;
+        // $laporanLab->link_sertifikat_lab = $form_link_sertifikat_lab;
+        // $laporanLab->link_hasil_uji = $form_link_hasil_uji;
+        // $laporanLab->link_dokumen_pendukung = $form_link_dokumen_pendukung;
         $laporanLab->periode = $form_periode;
         $laporanLab->periode_nama = $form_periode_nama;
         $laporanLab->tahun = $form_tahun;

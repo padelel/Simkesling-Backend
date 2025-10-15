@@ -80,7 +80,7 @@ class LimbahCairController extends Controller
     function limbahCairProsesCreate(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'id_transporter' => 'required|integer|min:1',
+            // 'id_transporter' => 'required|integer|min:1',
             'ph' => 'required|numeric|min:0|max:14',
             'bod' => 'required|numeric|min:0',
             'cod' => 'required|numeric|min:0',
@@ -193,7 +193,7 @@ class LimbahCairController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'oldid' => 'required|integer',
-            'id_transporter' => 'required|integer|min:1',
+            // 'id_transporter' => 'required|integer|min:1',
             'ph' => 'required|numeric|min:0|max:14',
             'bod' => 'required|numeric|min:0',
             'cod' => 'required|numeric|min:0',

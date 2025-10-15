@@ -16,7 +16,7 @@ class MLaporanLab extends Model
     const JENIS_KUALITAS_UDARA = 'kualitas_udara';
     const JENIS_KUALITAS_AIR = 'kualitas_air';
     const JENIS_KUALITAS_MAKANAN = 'kualitas_makanan';
-    const JENIS_USAP_ALAT_MEDIS_LINEN = 'usap_alat_medis_linen';
+    const JENIS_USAP_ALAT_MEDIS = 'usap_alat_medis';
     const JENIS_LIMBAH_CAIR = 'limbah_cair';
     const JENIS_GABUNGAN = 'gabungan';
 
@@ -26,33 +26,43 @@ class MLaporanLab extends Model
     protected $fillable = [
         'id_user',
         'nama_lab',
-        'jenis_pemeriksaan',
-        'total_pemeriksaan',
-        'parameter_uji',
-        'hasil_uji',
-        'metode_analisis',
+        // 'jenis_pemeriksaan',
+        // 'total_pemeriksaan',
+        // 'parameter_uji',
+        // 'hasil_uji',
+        // 'metode_analisis',
+        'kualitas_udara',
+        'kualitas_air',
+        'kualitas_makanan',
+        'usap_alat_medis',
+        'limbah_cair',
         'catatan',
-        'link_sertifikat_lab',
-        'link_hasil_uji',
-        'link_dokumen_pendukung',
+        // 'link_sertifikat_lab',
+        // 'link_hasil_uji',
+        // 'link_dokumen_pendukung',
         'periode',
         'periode_nama',
         'tahun',
-        'status_laporan_lab',
-        'statusactive_laporan_lab',
+        // 'status_laporan_lab',
+        // 'statusactive_laporan_lab',
         'user_created',
         'user_updated',
         'uid'
     ];
 
     protected $casts = [
-        'total_pemeriksaan' => 'integer',
+        // 'total_pemeriksaan' => 'integer',
         'periode' => 'integer',
         'tahun' => 'integer',
-        'status_laporan_lab' => 'integer',
-        'statusactive_laporan_lab' => 'integer',
-        'parameter_uji' => 'json',
-        'hasil_uji' => 'json'
+        // 'status_laporan_lab' => 'integer',
+        // 'statusactive_laporan_lab' => 'integer',
+        // 'parameter_uji' => 'json',
+        // 'hasil_uji' => 'json',
+        'kualitas_udara' => 'json',
+        'kualitas_air' => 'json',
+        'kualitas_makanan' => 'json',
+        'usap_alat_medis' => 'json',
+        'limbah_cair' => 'json'
     ];
 
     protected static function boot()
@@ -121,48 +131,48 @@ class MLaporanLab extends Model
     /**
      * Get parameter template based on examination type
      */
-    public function getParameterTemplate()
-    {
-        switch ($this->jenis_pemeriksaan) {
-            case self::JENIS_KUALITAS_UDARA:
-                return [
-                    'pencahayaan' => ['satuan' => 'lux', 'nilai' => null],
-                    'kebisingan' => ['satuan' => 'dB', 'nilai' => null],
-                    'udara_ambien' => ['satuan' => 'µg/m³', 'nilai' => null],
-                    'emisi' => ['satuan' => 'mg/m³', 'nilai' => null],
-                    'kelembapan' => ['satuan' => '%', 'nilai' => null]
-                ];
-            case self::JENIS_KUALITAS_AIR:
-                return [
-                    'air_minum' => ['satuan' => 'mg/L', 'nilai' => null],
-                    'air_hemodialisa' => ['satuan' => 'mg/L', 'nilai' => null],
-                    'air_hygiene_sanitasi' => ['satuan' => 'mg/L', 'nilai' => null]
-                ];
-            case self::JENIS_KUALITAS_MAKANAN:
-                return [
-                    'makanan' => ['satuan' => 'CFU/g', 'nilai' => null],
-                    'usap_alat_makan_masak' => ['satuan' => 'CFU/cm²', 'nilai' => null],
-                    'usap_dubur' => ['satuan' => 'CFU/swab', 'nilai' => null]
-                ];
-            case self::JENIS_USAP_ALAT_MEDIS_LINEN:
-                return [
-                    'usap_alat_medis' => ['satuan' => 'CFU/cm²', 'nilai' => null],
-                    'usap_linen' => ['satuan' => 'CFU/cm²', 'nilai' => null]
-                ];
-            case self::JENIS_LIMBAH_CAIR:
-                return [
-                    'ph' => ['satuan' => 'pH', 'nilai' => null],
-                    'bod' => ['satuan' => 'mg/L', 'nilai' => null],
-                    'cod' => ['satuan' => 'mg/L', 'nilai' => null],
-                    'tss' => ['satuan' => 'mg/L', 'nilai' => null],
-                    'minyak_lemak' => ['satuan' => 'mg/L', 'nilai' => null],
-                    'amoniak' => ['satuan' => 'mg/L', 'nilai' => null],
-                    'total_coliform' => ['satuan' => 'MPN/100ml', 'nilai' => null]
-                ];
-            default:
-                return [];
-        }
-    }
+    // public function getParameterTemplate()
+    // {
+    //     switch ($this->jenis_pemeriksaan) {
+    //         case self::JENIS_KUALITAS_UDARA:
+    //             return [
+    //                 'pencahayaan' => ['satuan' => 'lux', 'nilai' => null],
+    //                 'kebisingan' => ['satuan' => 'dB', 'nilai' => null],
+    //                 'udara_ambien' => ['satuan' => 'µg/m³', 'nilai' => null],
+    //                 'emisi' => ['satuan' => 'mg/m³', 'nilai' => null],
+    //                 'kelembapan' => ['satuan' => '%', 'nilai' => null]
+    //             ];
+    //         case self::JENIS_KUALITAS_AIR:
+    //             return [
+    //                 'air_minum' => ['satuan' => 'mg/L', 'nilai' => null],
+    //                 'air_hemodialisa' => ['satuan' => 'mg/L', 'nilai' => null],
+    //                 'air_hygiene_sanitasi' => ['satuan' => 'mg/L', 'nilai' => null]
+    //             ];
+    //         case self::JENIS_KUALITAS_MAKANAN:
+    //             return [
+    //                 'makanan' => ['satuan' => 'CFU/g', 'nilai' => null],
+    //                 'usap_alat_makan_masak' => ['satuan' => 'CFU/cm²', 'nilai' => null],
+    //                 'usap_dubur' => ['satuan' => 'CFU/swab', 'nilai' => null]
+    //             ];
+    //         case self::JENIS_USAP_ALAT_MEDIS:
+    //             return [
+    //                 'usap_alat_medis' => ['satuan' => 'CFU/cm²', 'nilai' => null],
+    //                 'usap_linen' => ['satuan' => 'CFU/cm²', 'nilai' => null]
+    //             ];
+    //         case self::JENIS_LIMBAH_CAIR:
+    //             return [
+    //                 'ph' => ['satuan' => 'pH', 'nilai' => null],
+    //                 'bod' => ['satuan' => 'mg/L', 'nilai' => null],
+    //                 'cod' => ['satuan' => 'mg/L', 'nilai' => null],
+    //                 'tss' => ['satuan' => 'mg/L', 'nilai' => null],
+    //                 'minyak_lemak' => ['satuan' => 'mg/L', 'nilai' => null],
+    //                 'amoniak' => ['satuan' => 'mg/L', 'nilai' => null],
+    //                 'total_coliform' => ['satuan' => 'MPN/100ml', 'nilai' => null]
+    //             ];
+    //         default:
+    //             return [];
+    //     }
+    // }
 
     /**
      * Accessor untuk status laporan dalam bentuk text

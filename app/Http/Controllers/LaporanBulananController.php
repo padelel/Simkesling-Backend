@@ -77,7 +77,6 @@ class LaporanBulananController extends Controller
             $limbah_b3_noncovid = 0;
             $limbah_jarum = 0;
             $limbah_sludge_ipal = 0;
-            $limbah_cair_b3 = 0;
             try {
                 $berat_limbah_total = floatval($v->berat_limbah_total ?? '0') ?? 0;
             } catch (Exception $ex) {
@@ -98,18 +97,13 @@ class LaporanBulananController extends Controller
                 $limbah_sludge_ipal = floatval($v->limbah_sludge_ipal ?? '0') ?? 0;
             } catch (Exception $ex) {
             }
-            try {
-                $limbah_cair_b3 = floatval($v->limbah_cair_b3 ?? '0') ?? 0;
-            } catch (Exception $ex) {
-            }
 
             // VALIDASI: Total keseluruhan limbah menggunakan berat_limbah_total yang sudah dihitung otomatis
-            // berat_limbah_total sudah merupakan hasil penjumlahan dari 6 komponen:
+            // berat_limbah_total sudah merupakan hasil penjumlahan dari 5 komponen:
             // - limbah_b3_covid (limbah B3 COVID-19)
             // - limbah_b3_noncovid (limbah B3 non-COVID) 
             // - limbah_jarum (limbah jarum suntik)
             // - limbah_sludge_ipal (limbah sludge IPAL)
-            // - limbah_cair_b3 (limbah cair B3)
             // - limbah_b3_nonmedis (limbah B3 non-medis)
             // Jadi tidak perlu dijumlahkan lagi untuk menghindari double counting
             $v->total_keseluruhan_limbah = $berat_limbah_total;
@@ -120,7 +114,6 @@ class LaporanBulananController extends Controller
             $v->limbah_b3_noncovid = $limbah_b3_noncovid;
             $v->limbah_jarum = $limbah_jarum;
             $v->limbah_sludge_ipal = $limbah_sludge_ipal;
-            $v->limbah_cair_b3 = $limbah_cair_b3;
         };
 
         return MyRB::asSuccess(200)
@@ -212,6 +205,7 @@ class LaporanBulananController extends Controller
                 $limbah_jarum = $this->safeFloatValue($laporanBulanan, 'limbah_jarum');
                 $limbah_sludge_ipal = $this->safeFloatValue($laporanBulanan, 'limbah_sludge_ipal');
                 $limbah_padat_infeksius = $this->safeFloatValue($laporanBulanan, 'limbah_padat_infeksius');
+                $debit_limbah_cair = $this->safeFloatValue($laporanBulanan, 'debit_limbah_cair');
 
                 $dataUser->limbah = $laporanBulanan;
                 $dataUser->limbah_b3 = $limbahB3Padat;
@@ -222,6 +216,7 @@ class LaporanBulananController extends Controller
                 $dataUser->limbah_jarum = $limbah_jarum;
                 $dataUser->limbah_sludge_ipal = $limbah_sludge_ipal;
                 $dataUser->limbah_padat_infeksius = $limbah_padat_infeksius;
+                $dataUser->debit_limbah_cair = $debit_limbah_cair;
 
                 // VALIDASI: Total limbah menggunakan berat_limbah_total dari database
                 $tmpData['total_limbah'] += $limbahB3Padat;
@@ -382,7 +377,6 @@ class LaporanBulananController extends Controller
         $form_ukuran_pemusnahan_sendiri = $request->ukuran_pemusnahan_sendiri;
         $form_limbah_b3_covid = $request->limbah_b3_covid ?? 0;
         $form_limbah_b3_noncovid = $request->limbah_b3_noncovid ?? 0;
-        $form_debit_limbah_cair = $request->limbah_cair_b3 ?? 0;
         $form_kapasitas_ipal = $request->kapasitas_ipal;
         $form_memenuhi_syarat = $request->memenuhi_syarat;
         $form_catatan = $request->catatan;
@@ -412,7 +406,7 @@ class LaporanBulananController extends Controller
         $form_limbah_jarum = $request->limbah_jarum ?? 0;
         $form_limbah_sludge_ipal = $request->limbah_sludge_ipal ?? 0;
         $form_limbah_padat_infeksius = $request->limbah_padat_infeksius ?? 0;
-        $form_debit_limbah_cair = $request->limbah_cair_b3 ?? 0;
+        $form_debit_limbah_cair = $request->debit_limbah_cair ?? 0;
 
         $laporanBulanan = MLaporanBulanan::where(['id_user' => $form_id_user, 'periode' => $form_periode, 'tahun' => $form_tahun, 'statusactive_laporan_bulanan' => 1])->get();
 
@@ -465,7 +459,6 @@ class LaporanBulananController extends Controller
         $laporan_bulanan->ukuran_pemusnahan_sendiri = $form_ukuran_pemusnahan_sendiri; // string
         $laporan_bulanan->limbah_b3_covid = $form_limbah_b3_covid; // string
         $laporan_bulanan->limbah_b3_noncovid = $form_limbah_b3_noncovid; // string
-        $laporan_bulanan->limbah_cair_b3 = $form_debit_limbah_cair; // string - menyimpan data limbah cair B3
         $laporan_bulanan->kapasitas_ipal = $form_kapasitas_ipal; // string
         $laporan_bulanan->memenuhi_syarat = $form_memenuhi_syarat; // integer
         $laporan_bulanan->catatan = $form_catatan; // string
@@ -489,6 +482,7 @@ class LaporanBulananController extends Controller
         $laporan_bulanan->limbah_jarum = $form_limbah_jarum;
         $laporan_bulanan->limbah_sludge_ipal = $form_limbah_sludge_ipal;
         $laporan_bulanan->limbah_padat_infeksius = $form_limbah_padat_infeksius;
+        $laporan_bulanan->debit_limbah_cair = $form_debit_limbah_cair;
         $laporan_bulanan->save();
 
         foreach ($form_limbah_padat_kategori as $key => $v) {
@@ -630,7 +624,6 @@ class LaporanBulananController extends Controller
         $form_ukuran_pemusnahan_sendiri = $request->ukuran_pemusnahan_sendiri;
         $form_limbah_b3_covid = $request->limbah_b3_covid ?? 0;
         $form_limbah_b3_noncovid = $request->limbah_b3_noncovid ?? 0;
-        $form_debit_limbah_cair = $request->limbah_cair_b3 ?? 0;
         $form_kapasitas_ipal = $request->kapasitas_ipal;
         $form_memenuhi_syarat = $request->memenuhi_syarat;
         $form_catatan = $request->catatan;
@@ -660,6 +653,7 @@ class LaporanBulananController extends Controller
         $form_limbah_jarum = $request->limbah_jarum ?? 0;
         $form_limbah_sludge_ipal = $request->limbah_sludge_ipal ?? 0;
         $form_limbah_padat_infeksius = $request->limbah_padat_infeksius ?? 0;
+        $form_debit_limbah_cair = $request->debit_limbah_cair ?? 0;
 
 
         // $laporanBulanan = MLaporanBulanan::where(['id_user' => $form_id_user, 'periode' => $form_periode, 'tahun' => $form_tahun, 'statusactive_laporan_bulanan' => 1])->get();
@@ -750,7 +744,6 @@ class LaporanBulananController extends Controller
         $laporan_bulanan->ukuran_pemusnahan_sendiri = $form_ukuran_pemusnahan_sendiri; // string
         $laporan_bulanan->limbah_b3_covid = $form_limbah_b3_covid; // string
         $laporan_bulanan->limbah_b3_noncovid = $form_limbah_b3_noncovid; // string
-        $laporan_bulanan->limbah_cair_b3 = $form_debit_limbah_cair; // string - menyimpan data limbah cair B3
         $laporan_bulanan->kapasitas_ipal = $form_kapasitas_ipal; // string
         $laporan_bulanan->memenuhi_syarat = $form_memenuhi_syarat; // integer
         $laporan_bulanan->catatan = $form_catatan; // string
@@ -774,6 +767,7 @@ class LaporanBulananController extends Controller
         $laporan_bulanan->limbah_jarum = $form_limbah_jarum;
         $laporan_bulanan->limbah_sludge_ipal = $form_limbah_sludge_ipal;
         $laporan_bulanan->limbah_padat_infeksius = $form_limbah_padat_infeksius;
+        $laporan_bulanan->debit_limbah_cair = $form_debit_limbah_cair;
         $laporan_bulanan->save();
 
         foreach ($form_limbah_padat_kategori as $key => $v) {

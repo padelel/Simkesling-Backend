@@ -48,8 +48,7 @@ class MLaporanBulanan extends Model
         'limbah_b3_medis',
         'limbah_jarum',
         'limbah_sludge_ipal',
-        'limbah_padat_infeksius',
-        'limbah_cair_b3'
+        'limbah_padat_infeksius'
     ];
 
     /**

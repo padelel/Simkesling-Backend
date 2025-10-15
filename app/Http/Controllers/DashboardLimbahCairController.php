@@ -44,6 +44,15 @@ class DashboardLimbahCairController extends Controller
             'laporan_periode_nama' => $periode_nama,
             'laporan_periode_tahun' => $tahun,
         ];
+
+        // Check if current user has reported for this period
+        $current_user_report = MLimbahCair::where('statusactive_limbah_cair', 1)
+            ->where('id_user', $form_id_user)
+            ->where('periode', $periode)
+            ->where('tahun', $tahun)
+            ->first();
+        
+        $laporan['sudah_lapor'] = $current_user_report ? true : false;
         
         // Use limbah cair table
         $laporan_query = MLimbahCair::where('statusactive_limbah_cair', 1);
