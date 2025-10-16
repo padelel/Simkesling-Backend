@@ -123,4 +123,8 @@ Route::group(['prefix' => 'v1'], function () {
     // Route::group(['middleware' => ['ceklogin.android']], function () {
     //     Route::get('/dokter/data/all', [AndroidController::class, 'getDataDokter'])->name('api.android.dokter.data.all');
     // });
+
+    Route::get('/test-cors', function () {
+    return response()->json(['message' => 'CORS Berhasil!']);
+});
 });

@@ -8,14 +8,15 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'paths' => ['api/*'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
-    // PERBAIKAN: Parse FRONTEND_URLS dari .env dengan benar
+    // 'allowed_origins' => ['http://localhost:3001'],
+
     'allowed_origins' => array_filter(array_map('trim', explode(',', env('FRONTEND_URLS', '')))),
 
-    'allowed_origins_patterns' => ['*'],
+    'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 
