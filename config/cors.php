@@ -1,30 +1,13 @@
 <?php
 
 return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Cross-Origin Resource Sharing (CORS) Configuration
-    |--------------------------------------------------------------------------
-    */
-
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
-
     'allowed_methods' => ['*'],
-
-    // 'allowed_origins' => ['http://localhost:3001'],
-
-    'allowed_origins' => array_filter(array_map('trim', explode(',', env('FRONTEND_URLS', '')))),
-
+    'allowed_origins' => ['http://localhost:3001', 'http://127.0.0.1:3001'],
+    // atau untuk pengembangan, bisa gunakan ['*']
     'allowed_origins_patterns' => [],
-
     'allowed_headers' => ['*'],
-
     'exposed_headers' => [],
-
     'max_age' => 0,
-
-    // PENTING: Karena withCredentials: true di frontend
-    'supports_credentials' => true,
-
+    'supports_credentials' => false,
 ];
