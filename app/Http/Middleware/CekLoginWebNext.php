@@ -12,15 +12,16 @@ class CekLoginWebNext
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // =================== TAMBAHAN PENTING ===================
-        // Jika ini adalah preflight request (OPTIONS), langsung lanjutkan
-        // tanpa perlu cek token.
+        // PENTING: Izinkan preflight request (OPTIONS) untuk lewat tanpa cek token.
         if ($request->isMethod('OPTIONS')) {
             return $next($request);
         }
-        // ========================================================
 
-        $token = $request->bearerToken(); // Cara yang lebih sederhana untuk mendapatkan token
+        // Ambil token dari Authorization Bearer atau fallback ke cookie 'token'
+        $token = $request->bearerToken();
+        if (!$token) {
+            $token = $request->cookie('token');
+        }
 
         if (!$token) {
             return MyRB::asError(401)
@@ -36,14 +37,9 @@ class CekLoginWebNext
                     ->withHttpCode(401)
                     ->build();
             }
-        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+        } catch (\Exception $e) {
             return MyRB::asError(401)
-                ->withMessage('Sesi telah berakhir. Silahkan login kembali.')
-                ->withHttpCode(401)
-                ->build();
-        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
-            return MyRB::asError(401)
-                ->withMessage('Token tidak valid. Silahkan login kembali.')
+                ->withMessage('Token tidak valid atau kedaluwarsa.')
                 ->withHttpCode(401)
                 ->build();
         }

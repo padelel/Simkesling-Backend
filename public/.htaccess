@@ -17,5 +17,16 @@
     # Handle Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^ index.php [L]
+RewriteRule ^ index.php [L]
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header always unset X-Powered-By
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set Referrer-Policy "no-referrer"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    # Baseline CSP for API/static responses served by Laravel (no external scripts)
+    Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'"
 </IfModule>

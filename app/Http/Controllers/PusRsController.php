@@ -101,22 +101,7 @@ class PusRsController extends Controller
             'username' => 'required',
             'password' => 'required',
             'nama_user' => 'required',
-            'link_manifest' => 'required',
-            'link_logbook' => 'required',
-            'link_lab_ipal' => 'required',
-            'link_lab_lain' => 'required',
-            'link_dokumen_lingkungan_rs' => 'required',
-            'link_izin_transporter' => 'required',
-            'link_mou_transporter' => 'required',
-            // 'link_swa_pantau' => 'required',
-            // 'link_lab_limbah_cair' => 'required',
-            // 'link_izin_ipal' => 'required',
-            // 'link_izin_tps' => 'required',
-            // 'link_ukl' => 'required',
-            // 'link_upl' => 'required',
-            // 'link1' => 'required',
-            // 'link2' => 'required',
-            // 'link3' => 'required',
+            // removed legacy link requirements
             'kapasitas_ipal' => 'required',
             'level' => 'required|in:2,3',
         ];
@@ -179,6 +164,7 @@ class PusRsController extends Controller
         $form_link1 = $request->link1;
         $form_link2 = $request->link2;
         $form_link3 = $request->link3;
+        $form_link_rincian_teknis = $request->link_rincian_teknis;
         $form_link_izin_ipal = $request->link_izin_ipal;
         $form_link_izin_tps = $request->link_izin_tps;
         $form_link_ukl = $request->link_ukl;
@@ -215,6 +201,7 @@ class PusRsController extends Controller
         $tableuser->link_lab_ipal = $form_link_lab_ipal; // string
         $tableuser->link_lab_lain = $form_link_lab_lain; // string
         $tableuser->link_dokumen_lingkungan_rs = $form_link_dokumen_lingkungan_rs; // string
+        $tableuser->link_rincian_teknis = $form_link_rincian_teknis; // string
         $tableuser->link_izin_transporter = $form_link_izin_transporter; // string
         $tableuser->link_mou_transporter = $form_link_mou_transporter; // string
         $tableuser->link_swa_pantau = $form_link_swa_pantau; // string
@@ -280,19 +267,6 @@ class PusRsController extends Controller
             'username' => 'required',
             'nama_user' => 'required',
             'level' => 'required|in:2,3',
-            'link_manifest' => 'required',
-            'link_logbook' => 'required',
-            'link_lab_ipal' => 'required',
-            'link_lab_lain' => 'required',
-            'link_dokumen_lingkungan_rs' => 'required',
-            'link_izin_transporter' => 'required',
-            'link_mou_transporter' => 'required',
-            // 'link_swa_pantau' => 'required',
-            // 'link_lab_limbah_cair' => 'required',
-            // 'link_izin_ipal' => 'required',
-            // 'link_izin_tps' => 'required',
-            // 'link_ukl' => 'required',
-            // 'link_upl' => 'required',
             'kapasitas_ipal' => 'required',
             'kapasitas_ipal_option' => 'nullable',
             'oldid' => 'required',
@@ -357,6 +331,7 @@ class PusRsController extends Controller
         $form_link1 = $request->link1;
         $form_link2 = $request->link2;
         $form_link3 = $request->link3;
+        $form_link_rincian_teknis = $request->link_rincian_teknis;
         $form_link_izin_ipal = $request->link_izin_ipal;
         $form_link_izin_tps = $request->link_izin_tps;
         $form_link_ukl = $request->link_ukl;
@@ -401,11 +376,12 @@ class PusRsController extends Controller
         $tableuser->notlp = $form_notlp; // string
         $tableuser->nohp = $form_nohp; // string
         $tableuser->email = $form_email; // string
-        $tableuser->link_manifest = $form_link_manifest; // string
-        $tableuser->link_logbook = $form_link_logbook; // string
-        $tableuser->link_lab_ipal = $form_link_lab_ipal; // string
-        $tableuser->link_lab_lain = $form_link_lab_lain; // string
+        if ($form_link_manifest != null) { $tableuser->link_manifest = $form_link_manifest; } // string
+        if ($form_link_logbook != null) { $tableuser->link_logbook = $form_link_logbook; } // string
+        if ($form_link_lab_ipal != null) { $tableuser->link_lab_ipal = $form_link_lab_ipal; } // string
+        if ($form_link_lab_lain != null) { $tableuser->link_lab_lain = $form_link_lab_lain; } // string
         $tableuser->link_dokumen_lingkungan_rs = $form_link_dokumen_lingkungan_rs; // string
+        $tableuser->link_rincian_teknis = $form_link_rincian_teknis; // string
         $tableuser->link_izin_transporter = $form_link_izin_transporter; // string
         $tableuser->link_mou_transporter = $form_link_mou_transporter; // string
         $tableuser->link_swa_pantau = $form_link_swa_pantau; // string
@@ -424,6 +400,7 @@ class PusRsController extends Controller
         $tableuser->link_ukl = $form_link_ukl; // string
         $tableuser->link_upl = $form_link_upl; // string
         $tableuser->kapasitas_ipal = $form_kapasitas_ipal; // string
+        $tableuser->kapasitas_ipal_option = $form_kapasitas_ipal_option; // string
         $tableuser->link_input_dokumen_lingkungan_rs = $form_link_input_dokumen_lingkungan_rs; // string
         // $tableuser->izin_ipal = $form_file_izin_ipal_nama; // string
         // $tableuser->izin_tps = $form_file_izin_tps_nama; // string

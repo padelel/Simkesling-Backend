@@ -1,17 +1,15 @@
-# BEGIN Force to HTTPS 
+## BEGIN Force to HTTPS (skip for localhost)
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    # Jangan paksa HTTPS untuk host localhost (pengembangan lokal)
+    RewriteCond %{HTTP_HOST} !^localhost(:[0-9]+)?$ [NC]
     RewriteCond %{HTTPS} off
     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 </IfModule>
-# END Force to HTTPS
+## END Force to HTTPS
 
-<!-- # --- PERBAIKAN DI SINI ---
-# Baris-baris ini dinonaktifkan karena menyebabkan header CORS ganda.
-# Pengaturan CORS sekarang sepenuhnya dikelola oleh Laravel di config/cors.php. -->
-<!-- # Header always set Access-Control-Allow-Origin "*" -->
-<!-- # Header always set Access-Control-Allow-Headers "Content-Type, Authorization, Accept, responseType" -->
-<!-- # Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS" -->
+## CORS dikelola oleh Laravel (config/cors.php). Jangan set header CORS di sini.
+## Jika sebelumnya ada Header always set Access-Control-Allow-*, harap dihapus.
 
 <IfModule mod_rewrite.c>
     RewriteEngine On

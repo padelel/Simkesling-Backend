@@ -12,13 +12,14 @@ class Kernel extends HttpKernel
      * @var array<int, class-string|string>
      */
     protected $middleware = [
-        // \App\Http\Middleware\TrustHosts::class,
+        \Illuminate\Http\Middleware\HandleCors::class,
         \App\Http\Middleware\TrustProxies::class,
-        // \Illuminate\Http\Middleware\HandleCors::class, // <-- HANYA SATU INI YANG DIPERLUKAN UNTUK CORS
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        // Security headers (CSP, etc.)
+        \App\Http\Middleware\SecureHeaders::class,
     ];
 
     /**
@@ -29,7 +30,6 @@ class Kernel extends HttpKernel
     protected $middlewareGroups = [
         'web' => [
             \App\Http\Middleware\EncryptCookies::class,
-            \Illuminate\Http\Middleware\HandleCors::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
@@ -38,8 +38,9 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            // \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
+            // Pastikan middleware Sanctum dinonaktifkan
+            // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
@@ -61,8 +62,6 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-
         'ceklogin.webnext' => \App\Http\Middleware\CekLoginWebNext::class,
     ];
 }
-

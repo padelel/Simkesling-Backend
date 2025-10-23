@@ -16,14 +16,18 @@ class MyUtils
                 $token = $request->headers->get('Authorization');
             }
             if ($token == null) {
+                // Fallback to HttpOnly cookie when Authorization header is absent
+                $token = $request->cookie('token');
+            }
+            if ($token == null) {
                 return null;
             }
-            
+
             // Remove 'Bearer ' prefix if present
             if (strpos($token, 'Bearer ') === 0) {
                 $token = substr($token, 7);
             }
-            
+
             $user = JWTAuth::setToken($token)->getPayload();
             if ($parse) {
                 return (object) $user->get();

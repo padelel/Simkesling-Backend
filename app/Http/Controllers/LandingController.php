@@ -81,11 +81,16 @@ class LandingController extends Controller
         $user = auth()->guard('webnext')->user();
         // Ambil masa berlaku token dari konfigurasi (dalam menit). Default 60 jika tidak ada.
         $ttl = config('jwt.ttl', 60);
+        
+        // Tentukan opsi cookie berdasarkan environment
+        $isProd = app()->environment('production');
+        $secure = $isProd ? true : false;
+        $sameSite = $isProd ? 'None' : 'Lax';
 
-        // Buat respons sukses tanpa token di body
+        // Buat respons sukses dan sertakan token di body untuk SPA Bearer auth
         $successResponse = MyRB::asSuccess(200)
             ->withMessage('Sukses Login.!')
-            ->withData(['user' => $user]) // Hanya kirim data user jika diperlukan frontend
+            ->withData(['user' => $user, 'token' => $token])
             ->build();
 
         // Tempelkan token sebagai HttpOnly cookie pada respons
@@ -95,10 +100,10 @@ class LandingController extends Controller
             $ttl,         // Masa berlaku (menit)
             '/',          // Path
             null,         // Domain
-            true,         // Secure flag (hanya lewat HTTPS)
-            true,         // HttpOnly flag (tidak bisa diakses oleh JavaScript)
+            $secure,      // Secure flag
+            true,         // HttpOnly flag
             false,        // Raw
-            'Strict'      // SameSite attribute
+            $sameSite     // SameSite attribute
         );
     }
 
