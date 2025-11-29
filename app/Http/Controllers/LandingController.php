@@ -562,52 +562,56 @@ class LandingController extends Controller
             'laporan_periode_tahun' => $tahun,
         ];
 
-        // Get all lab reports for the year
-        $laporan_lab_query = MLaporanLab::where('statusactive_laporan_lab', '<>', 0)->where('tahun', $tahun);
-        $total_laporan_perperiode = $laporan_lab_query->count();
+        // OPTIMIZATION: Preload all data once to reduce queries from 36+ to 2
+        // 1. Get all users and group by level - SINGLE QUERY
+        $all_users = MUser::where(['statusactive_user' => 1])
+            ->where('level', '<>', '1')
+            ->get();
         
-        // Get users who have reported
-        $user_laporan = $laporan_lab_query->pluck('id_user')->unique();
+        $user_rs_ids = $all_users->where('level', '=', '2')->pluck('id_user');
+        $user_puskesmas_ids = $all_users->where('level', '=', '3')->pluck('id_user');
         
-        // Get all users (excluding admin level 1)
-        $user_puskesmas_rs = MUser::where(['statusactive_user' => 1])->where('level', '<>', '1')->get();
-        $total_puskesmas_rs = $user_puskesmas_rs->count();
+        // 2. Preload all lab reports for the year - SINGLE QUERY
+        $all_reports_year = MLaporanLab::where('statusactive_laporan_lab', '<>', 0)
+            ->where('tahun', $tahun)
+            ->get()
+            ->groupBy('periode');
         
-        // Calculate who has and hasn't reported
-        $user_sudah_lapor = $user_puskesmas_rs->whereIn('id_user', $user_laporan);
-        $user_belum_lapor = $user_puskesmas_rs->whereNotIn('id_user', $user_laporan);
+        // Calculate static totals (no DB queries)
+        $total_puskesmas_rs = $all_users->count();
+        $total_rs = $user_rs_ids->count();
+        $total_puskesmas = $user_puskesmas_ids->count();
         
-        $total_puskesmas_rs_sudah_lapor = $user_sudah_lapor->count();
-        $total_puskesmas_rs_belum_lapor = $user_belum_lapor->count();
+        // Get total reports and unique users who reported using preloaded data
+        $all_reports_flat = $all_reports_year->flatten();
+        $total_laporan_perperiode = $all_reports_flat->count();
+        $user_laporan_ids = $all_reports_flat->pluck('id_user')->unique();
+        
+        $total_puskesmas_rs_sudah_lapor = $user_laporan_ids->count();
+        $total_puskesmas_rs_belum_lapor = $total_puskesmas_rs - $total_puskesmas_rs_sudah_lapor;
+        
+        $user_rs_sudah_lapor = $user_laporan_ids->intersect($user_rs_ids)->count();
+        $user_rs_belum_lapor = $total_rs - $user_rs_sudah_lapor;
+        
+        $user_puskesmas_sudah_lapor = $user_laporan_ids->intersect($user_puskesmas_ids)->count();
+        $user_puskesmas_belum_lapor = $total_puskesmas - $user_puskesmas_sudah_lapor;
 
-        // Separate by user level
-        $tmp_user_rs = MUser::where(['statusactive_user' => 1])->where('level', '=', '2')->pluck('id_user');
-        $tmp_user_puskesmas = MUser::where(['statusactive_user' => 1])->where('level', '=', '3')->pluck('id_user');
-
-        $user_rs_sudah_lapor = $user_sudah_lapor->whereIn('id_user', $tmp_user_rs)->count();
-        $user_rs_belum_lapor = MUser::where(['statusactive_user' => 1])->where('level', '=', '2')->whereNotIn('id_user', $user_laporan)->count();
-
-        $user_puskesmas_sudah_lapor = $user_sudah_lapor->whereIn('id_user', $tmp_user_puskesmas)->count();
-        $user_puskesmas_belum_lapor = MUser::where(['statusactive_user' => 1])->where('level', '=', '3')->whereNotIn('id_user', $user_laporan)->count();
-
-        $total_rs = MUser::where(['statusactive_user' => 1])->where('level', '=', '2')->count();
-        $total_puskesmas = MUser::where(['statusactive_user' => 1])->where('level', '=', '3')->count();
-
-        // Add reporting status to ALL users (both reported and not reported)
+        // OPTIMIZATION: Process user notifications using preloaded data (no queries in loop)
         $tmp_all_users = [];
-        foreach ($user_puskesmas_rs as $value) {
-            // Get months that have been reported for this user
-            $reported_months = MLaporanLab::where('statusactive_laporan_lab', '<>', 0)
-                ->where('id_user', $value->id_user)
-                ->where('tahun', $tahun)
-                ->pluck('periode')
-                ->toArray();
+        foreach ($all_users as $value) {
+            // Get all reported months for this user from preloaded data
+            $reported_months = [];
+            foreach ($all_reports_year as $month => $reports) {
+                if ($reports->contains('id_user', $value->id_user)) {
+                    $reported_months[] = $month;
+                }
+            }
             
             $all_months = range(1, 12);
             $unreported_months = array_diff($all_months, $reported_months);
             
             // Set reporting status
-            $value->sudah_lapor = in_array($value->id_user, $user_laporan->toArray());
+            $value->sudah_lapor = in_array($value->id_user, $user_laporan_ids->toArray());
             $value->reported_months_lab = $reported_months;
             $value->missing_months_lab = array_values($unreported_months);
             
@@ -632,7 +636,7 @@ class LandingController extends Controller
             $tmp_all_users[] = $value;
         }
 
-        // Chart data for 12 months
+        // OPTIMIZATION: Generate chart data using preloaded data (no queries in loop)
         $total_chart_puskesmas_rs = [];
         $total_chart_puskesmas_rs_belum_lapor = [];
         $total_chart_puskesmas_rs_sudah_lapor = [];
@@ -644,41 +648,32 @@ class LandingController extends Controller
         $total_chart_puskesmas_belum_lapor = [];
 
         for ($i = 1; $i <= 12; $i++) {
-            $tmp_user_laporan = MLaporanLab::where('statusactive_laporan_lab', '<>', 0)
-                ->where(['periode' => $i, 'tahun' => $tahun])
-                ->pluck('id_user')
-                ->unique();
+            // Get reports for this month from preloaded data
+            $month_reports = $all_reports_year[$i] ?? collect();
+            $month_user_ids = $month_reports->pluck('id_user')->unique();
             
-            $user_puskesmas_rs_sudah_lapor_bulan = $tmp_user_laporan->count();
-            $user_puskesmas_rs_belum_lapor_bulan = $total_puskesmas_rs - $user_puskesmas_rs_sudah_lapor_bulan;
-
-            $user_rs_sudah_lapor_bulan = MLaporanLab::where('statusactive_laporan_lab', '<>', 0)
-                ->where(['periode' => $i, 'tahun' => $tahun])
-                ->whereIn('id_user', $tmp_user_rs)
-                ->pluck('id_user')
-                ->unique()
-                ->count();
-            $user_rs_belum_lapor_bulan = $total_rs - $user_rs_sudah_lapor_bulan;
-
-            $user_puskesmas_sudah_lapor_bulan = MLaporanLab::where('statusactive_laporan_lab', '<>', 0)
-                ->where(['periode' => $i, 'tahun' => $tahun])
-                ->whereIn('id_user', $tmp_user_puskesmas)
-                ->pluck('id_user')
-                ->unique()
-                ->count();
-            $user_puskesmas_belum_lapor_bulan = $total_puskesmas - $user_puskesmas_sudah_lapor_bulan;
-
+            // Calculate counts using collection operations (no DB queries)
+            $puskesmas_rs_sudah_lapor = $month_user_ids->count();
+            $puskesmas_rs_belum_lapor = $total_puskesmas_rs - $puskesmas_rs_sudah_lapor;
+            
+            $rs_sudah_lapor = $month_user_ids->intersect($user_rs_ids)->count();
+            $rs_belum_lapor = $total_rs - $rs_sudah_lapor;
+            
+            $puskesmas_sudah_lapor = $month_user_ids->intersect($user_puskesmas_ids)->count();
+            $puskesmas_belum_lapor = $total_puskesmas - $puskesmas_sudah_lapor;
+            
+            // Push to chart arrays
             array_push($total_chart_puskesmas_rs, $total_puskesmas_rs);
-            array_push($total_chart_puskesmas_rs_belum_lapor, $user_puskesmas_rs_belum_lapor_bulan);
-            array_push($total_chart_puskesmas_rs_sudah_lapor, $user_puskesmas_rs_sudah_lapor_bulan);
-
+            array_push($total_chart_puskesmas_rs_belum_lapor, $puskesmas_rs_belum_lapor);
+            array_push($total_chart_puskesmas_rs_sudah_lapor, $puskesmas_rs_sudah_lapor);
+            
             array_push($total_chart_rs, $total_rs);
-            array_push($total_chart_rs_sudah_lapor, $user_rs_sudah_lapor_bulan);
-            array_push($total_chart_rs_belum_lapor, $user_rs_belum_lapor_bulan);
-
+            array_push($total_chart_rs_sudah_lapor, $rs_sudah_lapor);
+            array_push($total_chart_rs_belum_lapor, $rs_belum_lapor);
+            
             array_push($total_chart_puskesmas, $total_puskesmas);
-            array_push($total_chart_puskesmas_sudah_lapor, $user_puskesmas_sudah_lapor_bulan);
-            array_push($total_chart_puskesmas_belum_lapor, $user_puskesmas_belum_lapor_bulan);
+            array_push($total_chart_puskesmas_sudah_lapor, $puskesmas_sudah_lapor);
+            array_push($total_chart_puskesmas_belum_lapor, $puskesmas_belum_lapor);
         }
 
         // Pie chart data

@@ -66,6 +66,8 @@ Route::prefix('v1')->group(function () {
             Route::post('/pengajuan-transporter/update', [TransporterPengajuanController::class, 'mouTmpProsesUpdate'])->name('api.v1.user.pengajuan-transporter.update');
             Route::post('/pengajuan-transporter/delete', [TransporterPengajuanController::class, 'mouTmpProsesDelete'])->name('api.v1.user.pengajuan-transporter.delete');
             Route::post('/pengajuan-transporter/validasi', [TransporterPengajuanController::class, 'mouTmpProsesValidasi'])->name('api.v1.user.pengajuan-transporter.validasi');
+            Route::post('/pengajuan-transporter/approve', [TransporterPengajuanController::class, 'mouTmpProsesApprove'])->name('api.v1.user.pengajuan-transporter.approve');
+            Route::post('/pengajuan-transporter/reject', [TransporterPengajuanController::class, 'mouTmpProsesReject'])->name('api.v1.user.pengajuan-transporter.reject');
 
             // -- transporter
             Route::post('/transporter/data', [TransporterController::class, 'mouProsesData'])->name('api.v1.user.transporter.data');

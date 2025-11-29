@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MLimbahCair;
 use App\Models\MTransporter;
 use App\Models\MUser;
+use App\Services\LimbahCairService;
 use Illuminate\Http\Request;
 use MarcinOrlowski\ResponseBuilder\ResponseBuilder as RB;
 use App\MyResponseBuilder as MyRB;
@@ -12,66 +13,47 @@ use App\MyUtils as MyUtils;
 use DateTime;
 use Exception;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
 use Carbon\Carbon;
 
 class LimbahCairController extends Controller
 {
+    protected $limbahCairService;
+
+    public function __construct(LimbahCairService $limbahCairService)
+    {
+        $this->limbahCairService = $limbahCairService;
+    }
+
     /**
-     * Get data limbah cair
+     * Get data limbah cair (OPTIMIZED VERSION)
      */
     function limbahCairProsesData(Request $request)
     {
         // -- user payload -- \\
         $user = MyUtils::getPayloadToken($request, true);
-        $form_id_user = $user->id_user ?? 0;
-        $form_level = $user->level ?? '3';
-        $form_username = $user->username ?? '';
-        $form_nama_user = $user->username ?? '';
-        $form_uid = $user->uid ?? '';
-
-        // -- form input -- \\
-        $form_tahun = (($request->tahun == null) ? null : intval($request->tahun)) ?? null;
-        $form_periode = (($request->periode == null) ? null : intval($request->periode)) ?? null;
-
-        $tahun = $form_tahun;
-        $periode = $form_periode;
-        $periode_nama = $periode ? Carbon::create()->day(1)->month($periode)->format('F') : null;
-
-        $limbahCair = MLimbahCair::where('statusactive_limbah_cair', '<>', 0);
         
-        if ($form_level == '1') {
-            // Admin dapat melihat semua data
-        } else {
-            // User hanya dapat melihat data miliknya
-            $limbahCair = $limbahCair->where('id_user', $form_id_user);
-        }
-        
-        if ($periode) {
-            $limbahCair = $limbahCair->where('periode', $periode);
-        }
-        if ($tahun) {
-            $limbahCair = $limbahCair->where('tahun', $tahun);
-        }
+        $params = [
+            'user_id' => $user->id_user ?? 0,
+            'user_level' => $user->level ?? '3',
+            'username' => $user->username ?? '',
+            'year' => (($request->tahun == null) ? null : intval($request->tahun)) ?? null,
+            'period' => (($request->periode == null) ? null : intval($request->periode)) ?? null,
+            'search_name' => $request->nama_user ?? null,
+            'include_facilities' => $request->include_all_facilities ?? true,
+        ];
 
-        $limbahCair = $limbahCair->orderBy('id_limbah_cair', 'DESC')->get();
-        
-        foreach ($limbahCair as $key => $v) {
-            $user = MUser::where(['id_user' => $v->id_user])->latest()->first();
-            $v->user = $user;
-            
-            $transporter = MTransporter::where(['id_transporter' => $v->id_transporter])->latest()->first();
-            $v->transporter = $transporter;
-        }
+        try {
+            $data = $this->limbahCairService->getData($params);
 
-        return MyRB::asSuccess(200)
-            ->withMessage('Success get data limbah cair.!')
-            ->withData($limbahCair->values()->toArray())
-            ->build();
+            return MyRB::asSuccess(200)
+                ->withMessage('Success get data limbah cair.!')
+                ->withData($data)
+                ->build();
+        } catch (Exception $e) {
+            return MyRB::asError(500)
+                ->withMessage($e->getMessage())
+                ->build();
+        }
     }
 
     /**

@@ -41,7 +41,15 @@ class LaporanLabController extends Controller
         $periode = $form_periode;
         $periode_nama = $periode ? Carbon::create()->day(1)->month($periode)->format('F') : null;
 
-        $laporanLab = MLaporanLab::where('statusactive_laporan_lab', '<>', 0);
+        // OPTIMIZATION: Use eager loading to prevent N+1 query problem
+        $laporanLab = MLaporanLab::select([
+                'id_laporan_lab', 'id_user', 'kualitas_udara', 'kualitas_air', 
+                'kualitas_makanan', 'usap_alat_medis', 'limbah_cair', 'catatan',
+                'periode', 'periode_nama', 'tahun', 'statusactive_laporan_lab',
+                'created_at', 'updated_at', 'user_created', 'user_updated'
+            ])
+            ->with(['user:id_user,nama_user,username,tipe_tempat,level,kecamatan,kelurahan'])
+            ->where('statusactive_laporan_lab', '<>', 0);
         
         if ($form_level == '1') {
             // Admin dapat melihat semua data
@@ -58,11 +66,6 @@ class LaporanLabController extends Controller
         }
 
         $laporanLab = $laporanLab->orderBy('id_laporan_lab', 'DESC')->get();
-        
-        foreach ($laporanLab as $key => $v) {
-            $user = MUser::where(['id_user' => $v->id_user])->latest()->first();
-            $v->user = $user;
-        }
 
         return MyRB::asSuccess(200)
             ->withMessage('Success get data laporan lab.!')

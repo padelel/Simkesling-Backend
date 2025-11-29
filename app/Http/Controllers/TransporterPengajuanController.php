@@ -699,4 +699,131 @@ class TransporterPengajuanController extends Controller
             ->withData(null)
             ->build();
     }
+
+    function mouTmpProsesApprove(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'oldid' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return MyRB::asError(400)
+                ->withHttpCode(400)
+                ->withMessage('Uppss.. Form Tidak Sesuai.!')
+                ->withData($validator->errors()->toArray())
+                ->build();
+        }
+
+        $user = MyUtils::getPayloadToken($request, true);
+        $form_id_user = $user->id_user ?? 0;
+        $form_username = $user->username ?? '';
+        $form_oldid = $request->oldid;
+
+        $transporterTmp = MTransporterTmp::find($form_oldid);
+        if ($transporterTmp == null) {
+            return MyRB::asError(404)
+                ->withHttpCode(404)
+                ->withMessage('Data Referensi Tidak Ditemukan.!')
+                ->withData(null)
+                ->build();
+        }
+
+        $transporterTmpMOU = MTransporterTmpMOU::where('id_transporter_tmp', $form_oldid)->get();
+
+        $transporterTmp->status_transporter_tmp = 2;
+        $transporterTmp->user_updated = $form_username;
+        $transporterTmp->save();
+
+        $transporter = new MTransporter();
+        $transporter->id_transporter_tmp = $transporterTmp->id_transporter_tmp;
+        $transporter->id_user = $transporterTmp->id_user;
+        $transporter->npwp_transporter = $transporterTmp->npwp_transporter;
+        $transporter->nama_transporter = $transporterTmp->nama_transporter;
+        $transporter->alamat_transporter = $transporterTmp->alamat_transporter;
+        $transporter->id_kelurahan = $transporterTmp->id_kelurahan;
+        $transporter->id_kecamatan = $transporterTmp->id_kecamatan;
+        $transporter->kelurahan = $transporterTmp->kelurahan;
+        $transporter->kecamatan = $transporterTmp->kecamatan;
+        $transporter->notlp = $transporterTmp->notlp;
+        $transporter->nohp = $transporterTmp->nohp;
+        $transporter->email = $transporterTmp->email;
+        $transporter->catatan = $transporterTmp->catatan;
+        $transporter->status_transporter = 2;
+        $transporter->statusactive_transporter = $transporterTmp->statusactive_transporter_tmp;
+        $transporter->user_created = $transporterTmp->user_created;
+        $transporter->noizin = $transporterTmp->noizin;
+        $transporter->link_input_izin = $transporterTmp->link_input_izin;
+        $transporter->nama_pemusnah = $transporterTmp->nama_pemusnah;
+        $transporter->metode_pemusnah = $transporterTmp->metode_pemusnah;
+        $transporter->save();
+
+        $link_mou = $transporterTmpMOU->filter(function ($val) {
+            return $val->tipe == 'MOU';
+        });
+
+        foreach ($link_mou as $value) {
+            $transporterMOU = new MTransporterMOU();
+            $transporterMOU->norut = $value->norut;
+            $transporterMOU->id_transporter = $transporter->id_transporter;
+            $transporterMOU->id_transporter_tmp = $value->id_transporter_tmp;
+            $transporterMOU->id_transporter_tmp_mou = $value->id_transporter_tmp_mou;
+            $transporterMOU->id_user = $value->id_user;
+            $transporterMOU->keterangan = $value->keterangan;
+            $transporterMOU->link_input = $value->link_input;
+            $transporterMOU->tipe = $value->tipe;
+            $transporterMOU->tgl_mulai = $value->tgl_mulai;
+            $transporterMOU->tgl_akhir = $value->tgl_akhir;
+            $transporterMOU->status_transporter_mou = 1;
+            $transporterMOU->statusactive_transporter_mou = 1;
+            $transporterMOU->user_created = $transporter->user_created;
+            $transporterMOU->save();
+        }
+
+        return MyRB::asSuccess(200)
+            ->withHttpCode(200)
+            ->withMessage('Sukses Menyetujui Pengajuan Transporter.!')
+            ->withData(null)
+            ->build();
+    }
+
+    function mouTmpProsesReject(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'oldid' => 'required',
+            'catatan' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return MyRB::asError(400)
+                ->withHttpCode(400)
+                ->withMessage('Uppss.. Form Tidak Sesuai.!')
+                ->withData($validator->errors()->toArray())
+                ->build();
+        }
+
+        $user = MyUtils::getPayloadToken($request, true);
+        $form_username = $user->username ?? '';
+        $form_oldid = $request->oldid;
+        $form_catatan = $request->catatan;
+
+        $transporterTmp = MTransporterTmp::find($form_oldid);
+        if ($transporterTmp == null) {
+            return MyRB::asError(404)
+                ->withHttpCode(404)
+                ->withMessage('Data Referensi Tidak Ditemukan.!')
+                ->withData(null)
+                ->build();
+        }
+
+        $transporterTmp->status_transporter_tmp = 0;
+        $transporterTmp->catatan = $form_catatan;
+        $transporterTmp->user_updated = $form_username;
+        $transporterTmp->save();
+
+        return MyRB::asSuccess(200)
+            ->withHttpCode(200)
+            ->withMessage('Sukses Menolak Pengajuan Transporter.!')
+            ->withData(null)
+            ->build();
+    }
 }
